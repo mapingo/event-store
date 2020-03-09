@@ -99,6 +99,31 @@ public class MultipleDataSourcePublishedEventRepositoryIT {
         assertThat(publishedEvents.get(2).getId(), is(event_3.getId()));
     }
 
+    @Test
+    public void shouldGetEventRangeOfSizeOne() throws Exception {
+
+        final PublishedEvent event_1 = publishedEventBuilder().withPreviousEventNumber(0).withEventNumber(1).build();
+        final PublishedEvent event_2 = publishedEventBuilder().withPreviousEventNumber(1).withEventNumber(2).build();
+        final PublishedEvent event_3 = publishedEventBuilder().withPreviousEventNumber(2).withEventNumber(3).build();
+        final PublishedEvent event_4 = publishedEventBuilder().withPreviousEventNumber(3).withEventNumber(4).build();
+        final PublishedEvent event_5 = publishedEventBuilder().withPreviousEventNumber(4).withEventNumber(5).build();
+
+        final Connection connection = dataSource.getConnection();
+
+        insertPublishedEvent(event_1, connection);
+        insertPublishedEvent(event_2, connection);
+        insertPublishedEvent(event_3, connection);
+        insertPublishedEvent(event_4, connection);
+        insertPublishedEvent(event_5, connection);
+
+        final List<PublishedEvent> publishedEvents = multipleDataSourcePublishedEventRepository.findEventRange(2, 3)
+                .collect(toList());
+
+        assertThat(publishedEvents.size(), is(1));
+
+        assertThat(publishedEvents.get(0).getId(), is(event_2.getId()));
+    }
+
     public void insertPublishedEvent(final PublishedEvent publishedEvent, final Connection connection) throws SQLException {
 
         final String sql = "INSERT into published_event (" +
