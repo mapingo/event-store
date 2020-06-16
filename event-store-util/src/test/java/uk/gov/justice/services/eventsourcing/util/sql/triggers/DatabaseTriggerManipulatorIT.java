@@ -54,7 +54,7 @@ public class DatabaseTriggerManipulatorIT {
     public void shouldAddRemoveAndListTriggersOnTable() throws Exception {
 
         final String triggerName = "temp_trigger";
-        final String action = "EXECUTE PROCEDURE update_pre_publish_queue()";
+        final String action = "EXECUTE FUNCTION update_pre_publish_queue()";
 
         assertThat(databaseTriggerManipulator.listTriggersOnTable(TEMPORARY_TABLE_NAME).isEmpty(), is(true));
 
@@ -78,7 +78,7 @@ public class DatabaseTriggerManipulatorIT {
     public void shouldFindTriggerByItsName() throws Exception {
 
         final String triggerName = "temp_trigger";
-        final String action = "EXECUTE PROCEDURE update_pre_publish_queue()";
+        final String action = "EXECUTE FUNCTION update_pre_publish_queue()";
 
         assertThat(databaseTriggerManipulator.listTriggersOnTable(TEMPORARY_TABLE_NAME).isEmpty(), is(true));
 
