@@ -50,7 +50,7 @@ public class StreamErrorConverter {
         final UUID streamId = event.metadata().streamId()
                 .orElseThrow(() -> new MissingStreamIdException(format("No stream id found in event JsonEnvelope. Event name: '%s', eventId: '%s'", eventName, eventId)));
         final Long positionInStream = event.metadata().position()
-                .orElseThrow(() -> new MissingPoisitionInStreamException(format("No positionInStream found in event JsonEnvelope. Event name: '%s', eventId: '%s'", eventName, eventId)));
+                .orElseThrow(() -> new MissingPositionInStreamException(format("No positionInStream found in event JsonEnvelope. Event name: '%s', eventId: '%s'", eventName, eventId)));
         final String source = event.metadata().source()
                 .orElseThrow(() -> new MissingSourceException(format("No source found in event JsonEnvelope. Event name: '%s', eventId: '%s'", eventName, eventId)));
         final ZonedDateTime dateCreated = clock.now();

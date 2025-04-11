@@ -282,8 +282,8 @@ public class StreamErrorConverterTest {
         when(earliestStackTraceElement.getMethodName()).thenReturn(methodName);
         when(earliestStackTraceElement.getLineNumber()).thenReturn(lineNumber);
 
-        final MissingPoisitionInStreamException missingPoisitionInStreamException = assertThrows(
-                MissingPoisitionInStreamException.class,
+        final MissingPositionInStreamException missingPoisitionInStreamException = assertThrows(
+                MissingPositionInStreamException.class,
                 () -> streamErrorConverter.asStreamError(exceptionDetails, event, componentName));
 
         assertThat(missingPoisitionInStreamException.getMessage(), is("No positionInStream found in event JsonEnvelope. Event name: 'context.events.something.happened', eventId: '7de6f031-8d1e-4e3b-9f03-112a9af80690'"));

@@ -1,7 +1,6 @@
 package uk.gov.justice.services.event.sourcing.subscription.error;
 
-import static javax.transaction.Transactional.TxType.REQUIRED;
-import static javax.transaction.Transactional.TxType.REQUIRES_NEW;
+import static javax.transaction.Transactional.TxType.MANDATORY;
 
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamError;
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetails;
@@ -28,7 +27,7 @@ public class StreamErrorRepository {
     @Inject
     private StreamStatusErrorPersistence streamStatusErrorPersistence;
 
-    @Transactional(REQUIRES_NEW)
+    @Transactional(MANDATORY)
     public void markStreamAsErrored(final StreamError streamError) {
 
         try (final Connection connection = viewStoreJdbcDataSourceProvider.getDataSource().getConnection()) {
@@ -53,7 +52,7 @@ public class StreamErrorRepository {
         }
     }
 
-    @Transactional(REQUIRED)
+    @Transactional(MANDATORY)
     public void markStreamAsFixed(final UUID streamId, final String source, final String componentName) {
 
         try (final Connection connection = viewStoreJdbcDataSourceProvider.getDataSource().getConnection()) {
