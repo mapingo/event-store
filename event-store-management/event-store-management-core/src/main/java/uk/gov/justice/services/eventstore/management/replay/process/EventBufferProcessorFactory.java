@@ -3,7 +3,6 @@ package uk.gov.justice.services.eventstore.management.replay.process;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
 import uk.gov.justice.services.event.buffer.api.EventBufferService;
-import uk.gov.justice.services.event.sourcing.subscription.error.StreamErrorRepository;
 import uk.gov.justice.services.event.sourcing.subscription.manager.EventBufferProcessor;
 import uk.gov.justice.services.event.sourcing.subscription.manager.cdi.InterceptorContextProvider;
 
@@ -18,9 +17,6 @@ public class EventBufferProcessorFactory {
     private InterceptorChainProcessorProducer interceptorChainProcessorProducer;
 
     @Inject
-    private StreamErrorRepository streamErrorRepository;
-
-    @Inject
     private InterceptorContextProvider interceptorContextProvider;
 
     public EventBufferProcessor create(String componentName) {
@@ -29,7 +25,6 @@ public class EventBufferProcessorFactory {
         return new EventBufferProcessor(
                 interceptorChainProcessor,
                 eventBufferService,
-                streamErrorRepository,
                 interceptorContextProvider,
                 componentName);
     }

@@ -3,7 +3,23 @@ All notable changes to this project will be documented in this file, which follo
 on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
-### [Unreleased]
+### [Unreleased] 
+### Changed
+- Refactor the event buffer to:
+  - Run each event sent to the event listeners in its own transaction
+  - Update the `stream_status` table with `latest_known_position`
+  - Mark stream as 'up_to_date' when all events from event-buffer successfully processed
+- New column `latest_known_position` in `stream_status table`
+- New column `is_up_to_date` in `stream_status table`
+- New liquibase scripts to update stream_status table
+### Added
+- New SubscriptionManager class `NewSubscriptionManager`to handle the new way of processing events
+- New replacement StreamStatusRepository class for data access of stream_status table 
+
+## [17.102.3] - 2025-04-16
+### Changed
+- Update framework to 17.102.2 for:
+  - Extended RestPoller to include custom PollInterval implementation and introduced FibonacciPollWithStartAndMax class
 
 # [17.103.0-M1] - 2025-04-28
 ### Changed

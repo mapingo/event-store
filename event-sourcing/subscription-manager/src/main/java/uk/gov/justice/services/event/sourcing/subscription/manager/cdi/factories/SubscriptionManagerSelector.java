@@ -3,6 +3,7 @@ package uk.gov.justice.services.event.sourcing.subscription.manager.cdi.factorie
 import static uk.gov.justice.services.core.annotation.Component.EVENT_INDEXER;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.services.common.configuration.errors.event.EventErrorHandlingConfiguration;
 import uk.gov.justice.services.subscription.SubscriptionManager;
 import uk.gov.justice.subscription.domain.subscriptiondescriptor.Subscription;
 import uk.gov.justice.subscription.registry.SubscriptionsDescriptorsRegistry;
@@ -12,13 +13,19 @@ import javax.inject.Inject;
 public class SubscriptionManagerSelector {
 
     @Inject
-    SubscriptionsDescriptorsRegistry subscriptionDescriptorRegistry;
+    private SubscriptionsDescriptorsRegistry subscriptionDescriptorRegistry;
 
     @Inject
-    DefaultSubscriptionManagerFactory defaultSubscriptionManagerFactory;
+    private DefaultSubscriptionManagerFactory defaultSubscriptionManagerFactory;
 
     @Inject
-    BackwardsCompatibleSubscriptionManagerFactory backwardsCompatibleSubscriptionManagerFactory;
+    private BackwardsCompatibleSubscriptionManagerFactory backwardsCompatibleSubscriptionManagerFactory;
+
+    @Inject
+    private EventErrorHandlingConfiguration eventErrorHandlingConfiguration;
+
+    @Inject
+    private NewSubscriptionManagerFactory newSubscriptionManagerFactory;
 
     public SubscriptionManager selectFor(final Subscription subscription) {
 
@@ -26,6 +33,11 @@ public class SubscriptionManagerSelector {
         final String componentName = subscriptionDescriptorRegistry.findComponentNameBy(subscriptionName);
 
         if(componentName.contains(EVENT_LISTENER) || componentName.contains(EVENT_INDEXER)) {
+
+            if(eventErrorHandlingConfiguration.isEventErrorHandlingEnabled()) {
+                return newSubscriptionManagerFactory.create(componentName);
+            }
+
             return defaultSubscriptionManagerFactory.create(componentName);
         }
 

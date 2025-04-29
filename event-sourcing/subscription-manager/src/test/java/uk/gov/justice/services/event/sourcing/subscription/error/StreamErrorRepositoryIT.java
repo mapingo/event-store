@@ -104,7 +104,6 @@ public class StreamErrorRepositoryIT {
         }
     }
 
-
     @Test
     public void shouldSaveNewStreamErrorAndUpdateStreamStatusTableWhenStreamExistsInStreamStatusTable() throws Exception {
 
