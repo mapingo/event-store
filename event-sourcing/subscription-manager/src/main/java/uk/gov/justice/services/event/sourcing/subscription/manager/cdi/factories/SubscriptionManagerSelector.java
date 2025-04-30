@@ -34,7 +34,7 @@ public class SubscriptionManagerSelector {
 
         if(componentName.contains(EVENT_LISTENER) || componentName.contains(EVENT_INDEXER)) {
 
-            if(eventErrorHandlingConfiguration.isEventErrorHandlingEnabled()) {
+            if(eventErrorHandlingConfiguration.isEventStreamSelfHealingEnabled()) {
                 return newSubscriptionManagerFactory.create(componentName);
             }
 
