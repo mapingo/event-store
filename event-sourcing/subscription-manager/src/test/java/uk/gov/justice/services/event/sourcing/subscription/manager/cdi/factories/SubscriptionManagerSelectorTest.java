@@ -50,7 +50,7 @@ public class SubscriptionManagerSelectorTest {
 
         final DefaultSubscriptionManager defaultSubscriptionManager = mock(DefaultSubscriptionManager.class);
 
-        when(eventErrorHandlingConfiguration.isEventErrorHandlingEnabled()).thenReturn(false);
+        when(eventErrorHandlingConfiguration.isEventStreamSelfHealingEnabled()).thenReturn(false);
         when(subscription.getName()).thenReturn(subscriptionName);
         when(subscriptionDescriptorRegistry.findComponentNameBy(subscriptionName)).thenReturn(componentName);
         when(defaultSubscriptionManagerFactory.create(componentName)).thenReturn(defaultSubscriptionManager);
@@ -71,7 +71,7 @@ public class SubscriptionManagerSelectorTest {
 
         final NewSubscriptionManager newSubscriptionManager = mock(NewSubscriptionManager.class);
 
-        when(eventErrorHandlingConfiguration.isEventErrorHandlingEnabled()).thenReturn(true);
+        when(eventErrorHandlingConfiguration.isEventStreamSelfHealingEnabled()).thenReturn(true);
         when(subscription.getName()).thenReturn(subscriptionName);
         when(subscriptionDescriptorRegistry.findComponentNameBy(subscriptionName)).thenReturn(componentName);
         when(newSubscriptionManagerFactory.create(componentName)).thenReturn(newSubscriptionManager);
@@ -92,7 +92,7 @@ public class SubscriptionManagerSelectorTest {
 
         final DefaultSubscriptionManager defaultSubscriptionManager = mock(DefaultSubscriptionManager.class);
 
-        when(eventErrorHandlingConfiguration.isEventErrorHandlingEnabled()).thenReturn(false);
+        when(eventErrorHandlingConfiguration.isEventStreamSelfHealingEnabled()).thenReturn(false);
         when(subscription.getName()).thenReturn(subscriptionName);
         when(subscriptionDescriptorRegistry.findComponentNameBy(subscriptionName)).thenReturn(componentName);
         when(defaultSubscriptionManagerFactory.create(componentName)).thenReturn(defaultSubscriptionManager);
@@ -113,10 +113,10 @@ public class SubscriptionManagerSelectorTest {
 
         final NewSubscriptionManager newSubscriptionManager = mock(NewSubscriptionManager.class);
 
-        when(eventErrorHandlingConfiguration.isEventErrorHandlingEnabled()).thenReturn(true);
+        when(eventErrorHandlingConfiguration.isEventStreamSelfHealingEnabled()).thenReturn(true);
         when(subscription.getName()).thenReturn(subscriptionName);
         when(subscriptionDescriptorRegistry.findComponentNameBy(subscriptionName)).thenReturn(componentName);
-        when(eventErrorHandlingConfiguration.isEventErrorHandlingEnabled()).thenReturn(true);
+        when(eventErrorHandlingConfiguration.isEventStreamSelfHealingEnabled()).thenReturn(true);
         when(newSubscriptionManagerFactory.create(componentName)).thenReturn(newSubscriptionManager);
 
         assertThat(subscriptionManagerSelector.selectFor(subscription), is(newSubscriptionManager));

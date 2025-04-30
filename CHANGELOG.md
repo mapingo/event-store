@@ -5,6 +5,11 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### [Unreleased] 
 
+# [17.103.0-M3] - 2025-04-30
+### Changed 
+- Update framework to 17.103.0-M2 in order to:
+- Change name of jndi value for self-healing from `event.error.handling.enabled` to `event.stream.self.healing.enabled`
+
 # [17.103.0-M2] - 2025-04-29
 ### Changed
 - Refactor the event buffer to:
