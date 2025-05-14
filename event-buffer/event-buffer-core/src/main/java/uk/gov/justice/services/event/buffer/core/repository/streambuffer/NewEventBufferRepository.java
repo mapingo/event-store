@@ -29,6 +29,7 @@ public class NewEventBufferRepository {
                 component,
                 buffered_at)
             VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT DO NOTHING
             """;
 
     private static final String FIND_BY_POSITION_SQL = """
@@ -50,7 +51,7 @@ public class NewEventBufferRepository {
     @Inject
     private ViewStoreJdbcDataSourceProvider viewStoreJdbcDataSourceProvider;
 
-    public void insert(final EventBufferEvent eventBufferEvent) {
+    public int insert(final EventBufferEvent eventBufferEvent) {
 
         try (final Connection connection = viewStoreJdbcDataSourceProvider.getDataSource().getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL)) {
@@ -61,7 +62,7 @@ public class NewEventBufferRepository {
             preparedStatement.setString(5, eventBufferEvent.getComponent());
             preparedStatement.setTimestamp(6, toSqlTimestamp(eventBufferEvent.getBufferedAt()));
 
-            preparedStatement.executeUpdate();
+            return preparedStatement.executeUpdate();
         } catch (final SQLException e) {
             throw new EventBufferPersistenceException(
                     format("Failed to insert event into event-buffer table. streamId '%s'. source '%s', component '%s'",

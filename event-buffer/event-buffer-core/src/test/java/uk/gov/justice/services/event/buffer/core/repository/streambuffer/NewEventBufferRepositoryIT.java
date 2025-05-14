@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
+import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
 
 import java.time.ZonedDateTime;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,6 +35,11 @@ public class NewEventBufferRepositoryIT {
 
     @InjectMocks
     private NewEventBufferRepository newEventBufferRepository;
+
+    @BeforeEach
+    public void cleanTables() {
+       new DatabaseCleaner().cleanStreamBufferTable("framework");
+    }
 
     @Test
     public void shouldInsertFindFirstAndRemoveEventFromEventInsertTable() throws Exception {
@@ -97,5 +104,35 @@ public class NewEventBufferRepositoryIT {
                 eventBufferEvent_3.getPosition());
 
         assertThat(newEventBufferRepository.findByPositionAndStream(streamId, 4, source, component), is(empty()));
+    }
+
+    @Test
+    public void shouldInsertIdempotently() throws Exception {
+
+        final ZonedDateTime now = new UtcClock().now();
+        final DataSource viewStoreDataSource = new TestJdbcDataSourceProvider().getViewStoreDataSource("framework");
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
+        when(clock.now()).thenReturn(now);
+
+        final UUID streamId = randomUUID();
+        final String source = "some-source";
+        final String component = "some-component";
+        final EventBufferEvent eventBufferEvent = new EventBufferEvent(
+                streamId,
+                23,
+                "some-more-event-json",
+                source,
+                component,
+                clock.now()
+        );
+
+        assertThat(newEventBufferRepository.insert(eventBufferEvent), is(1));
+        assertThat(newEventBufferRepository.insert(eventBufferEvent), is(0));
+        assertThat(newEventBufferRepository.insert(eventBufferEvent), is(0));
+        assertThat(newEventBufferRepository.insert(eventBufferEvent), is(0));
+        assertThat(newEventBufferRepository.insert(eventBufferEvent), is(0));
+
+        assertThat(newEventBufferRepository.findByPositionAndStream(streamId, eventBufferEvent.getPosition(), source, component), is(of(eventBufferEvent)));
     }
 }
