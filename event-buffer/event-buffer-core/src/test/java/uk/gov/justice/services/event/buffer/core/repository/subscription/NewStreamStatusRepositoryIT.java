@@ -179,7 +179,7 @@ public class NewStreamStatusRepositoryIT {
     }
 
     @Test
-    public void shouldUpdateLatestPositionOfAStream() throws Exception {
+    public void shouldUpdateLatestPositionAndIsUpToDateOfAStream() throws Exception {
 
         final DataSource viewStoreDataSource = new TestJdbcDataSourceProvider().getViewStoreDataSource(FRAMEWORK);
         when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
@@ -200,12 +200,14 @@ public class NewStreamStatusRepositoryIT {
                 componentName,
                 updatedAt,
                 upToDate), is(1));
+        newStreamStatusRepository.setUpToDate(true, streamId, source, componentName);
 
         final Optional<StreamStatus> streamStatus = newStreamStatusRepository.find(streamId, source, componentName);
         assertThat(streamStatus.isPresent(), is(true));
         assertThat(streamStatus.get().latestKnownPosition(), is(0L));
+        assertThat(streamStatus.get().isUpToDate(), is(true));
 
-        newStreamStatusRepository.updateLatestKnownPosition(
+        newStreamStatusRepository.updateLatestKnownPositionAndIsUpToDateToFalse(
                 streamId,
                 source,
                 componentName,
@@ -215,6 +217,7 @@ public class NewStreamStatusRepositoryIT {
         final Optional<StreamStatus> updatedStreamStatus = newStreamStatusRepository.find(streamId, source, componentName);
         assertThat(updatedStreamStatus.isPresent(), is(true));
         assertThat(updatedStreamStatus.get().latestKnownPosition(), is(latestKnownPosition));
+        assertThat(updatedStreamStatus.get().isUpToDate(), is(false));
     }
 
     @Test
