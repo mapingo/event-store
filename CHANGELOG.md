@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+### Changed 
+- Insert into stream_buffer table during event publishing is now idempotent
 
 # [17.103.0-M3] - 2025-04-30
 ### Changed 

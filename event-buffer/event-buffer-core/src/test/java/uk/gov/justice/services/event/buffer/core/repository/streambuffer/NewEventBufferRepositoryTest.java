@@ -44,6 +44,7 @@ public class NewEventBufferRepositoryTest {
                 component,
                 buffered_at)
             VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT DO NOTHING
             """;
 
     private static final String FIND_BY_POSITION_SQL = """
@@ -77,6 +78,7 @@ public class NewEventBufferRepositoryTest {
         final String source = "some-source";
         final String componentName = "some-component-name";
         final ZonedDateTime bufferedAt = new UtcClock().now();
+        final int rowsAffected = 1;
 
         final EventBufferEvent eventBufferEvent = new EventBufferEvent(
                 streamId,
@@ -94,8 +96,9 @@ public class NewEventBufferRepositoryTest {
         when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(INSERT_SQL)).thenReturn(preparedStatement);
+        when(preparedStatement.executeUpdate()).thenReturn(rowsAffected);
 
-        newEventBufferRepository.insert(eventBufferEvent);
+        assertThat(newEventBufferRepository.insert(eventBufferEvent), is(rowsAffected));
 
         final InOrder inOrder = inOrder(preparedStatement, connection);
 
