@@ -4,8 +4,13 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+# [17.103.0-M4] - 2025-05-23
 ### Changed 
 - Insert into stream_buffer table during event publishing is now idempotent
+- Update framework-libraries to 17.103.0-M3 for:
+  - Move of prometheus metrics to cpp-platform-libraries in with the new azure metrics 
+### Added 
+- Add micrometer counter base class 
 
 # [17.103.0-M3] - 2025-04-30
 ### Changed 

@@ -8,6 +8,7 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
@@ -23,6 +24,7 @@ import uk.gov.justice.services.event.sourcing.subscription.manager.cdi.Intercept
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingStreamIdException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.metrics.micrometer.counters.MicrometerMetricsCounters;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -65,6 +67,9 @@ public class SubscriptionEventProcessorTest {
 
     @Mock
     private EventProcessingStatusCalculator eventProcessingStatusCalculator;
+
+    @Mock
+    private MicrometerMetricsCounters micrometerMetricsCounters;
 
     @Mock
     private UserTransaction userTransaction;
@@ -116,8 +121,10 @@ public class SubscriptionEventProcessorTest {
                 newEventBufferRepository,
                 newStreamStatusRepository,
                 streamErrorRepository,
-                transactionHandler);
+                transactionHandler,
+                micrometerMetricsCounters);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
@@ -176,8 +183,10 @@ public class SubscriptionEventProcessorTest {
                 newEventBufferRepository,
                 newStreamStatusRepository,
                 streamErrorRepository,
-                transactionHandler);
+                transactionHandler,
+                micrometerMetricsCounters);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
@@ -234,8 +243,10 @@ public class SubscriptionEventProcessorTest {
                 newStreamStatusRepository,
                 newEventBufferRepository,
                 streamErrorRepository,
-                transactionHandler);
+                transactionHandler,
+                micrometerMetricsCounters);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
@@ -289,8 +300,10 @@ public class SubscriptionEventProcessorTest {
                 newEventBufferRepository,
                 newStreamStatusRepository,
                 streamErrorRepository,
-                transactionHandler);
+                transactionHandler,
+                micrometerMetricsCounters);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
@@ -345,8 +358,10 @@ public class SubscriptionEventProcessorTest {
                 newEventBufferRepository,
                 newStreamStatusRepository,
                 streamErrorRepository,
-                transactionHandler);
+                transactionHandler,
+                micrometerMetricsCounters);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
@@ -411,8 +426,10 @@ public class SubscriptionEventProcessorTest {
                 newStreamStatusRepository,
                 newEventBufferRepository,
                 transactionHandler,
-                streamErrorStatusHandler);
+                streamErrorStatusHandler,
+                micrometerMetricsCounters);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
@@ -460,8 +477,10 @@ public class SubscriptionEventProcessorTest {
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
-                streamErrorStatusHandler);
+                streamErrorStatusHandler,
+                micrometerMetricsCounters);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
         inOrder.verify(transactionHandler).rollback(userTransaction);
         inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, componentName);
 
@@ -502,8 +521,10 @@ public class SubscriptionEventProcessorTest {
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
-                streamErrorStatusHandler);
+                streamErrorStatusHandler,
+                micrometerMetricsCounters);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
         inOrder.verify(transactionHandler).rollback(userTransaction);
         inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, componentName);
 
