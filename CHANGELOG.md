@@ -4,16 +4,12 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+
+# [17.103.0-M4] - 2025-05-22
 ### Changed 
 - Insert into stream_buffer table during event publishing is now idempotent
-
-# [17.103.0-M3] - 2025-04-30
-### Changed 
 - Update framework to 17.103.0-M2 in order to:
 - Change name of jndi value for self-healing from `event.error.handling.enabled` to `event.stream.self.healing.enabled`
-
-# [17.103.0-M2] - 2025-04-29
-### Changed
 - Refactor the event buffer to:
   - Run each event sent to the event listeners in its own transaction
   - Update the `stream_status` table with `latest_known_position`
@@ -21,13 +17,10 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 - New column `latest_known_position` in `stream_status table`
 - New column `is_up_to_date` in `stream_status table`
 - New liquibase scripts to update stream_status table
+- Release file-service extraction changes (via framework-libraries)
 ### Added
 - New SubscriptionManager class `NewSubscriptionManager`to handle the new way of processing events
-- New replacement StreamStatusRepository class for data access of stream_status table 
-
-# [17.103.0-M1] - 2025-04-28
-### Changed
-- Release file-service extraction changes (via framework-libraries)
+- New replacement StreamStatusRepository class for data access of stream_status table
 
 ## [17.102.3] - 2025-04-16
 ### Changed
