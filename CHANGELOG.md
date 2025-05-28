@@ -5,8 +5,9 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### [Unreleased] 
 
-# [17.103.0-M4] - 2025-05-22
-### Changed 
+# [17.103.0-M6] - 2025-05-28
+### Changed
+- Fix ReplayEventToEventListener, ReplayEventToEventIndexer, CatchUp command execution to work with selfhealing feature
 - Insert into stream_buffer table during event publishing is now idempotent
 - Update framework to 17.103.0-M2 in order to:
 - Change name of jndi value for self-healing from `event.error.handling.enabled` to `event.stream.self.healing.enabled`
