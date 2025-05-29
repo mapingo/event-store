@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.transaction.UserTransaction;
+
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
@@ -20,6 +21,7 @@ import uk.gov.justice.services.event.sourcing.subscription.manager.cdi.Intercept
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingStreamIdException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.metrics.micrometer.counters.MicrometerMetricsCounters;
 
 import static java.lang.String.format;
 import static javax.transaction.Transactional.TxType.NOT_SUPPORTED;
@@ -54,10 +56,14 @@ public class SubscriptionEventProcessor {
     @Inject
     private TransactionHandler transactionHandler;
 
+    @Inject
+    private MicrometerMetricsCounters micrometerMetricsCounters;
+
     @Transactional(value = NOT_SUPPORTED)
     public boolean processSingleEvent(
             final JsonEnvelope eventJsonEnvelope,
             final String componentName) {
+
 
         final Metadata metadata = eventJsonEnvelope.metadata();
         final String name = metadata.name();
@@ -91,6 +97,7 @@ public class SubscriptionEventProcessor {
             }
 
             transactionHandler.commit(userTransaction);
+            micrometerMetricsCounters.incrementEventsProcessedCount();
 
             return eventProcessed.get();
 

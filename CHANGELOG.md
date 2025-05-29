@@ -4,6 +4,11 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+# [17.103.0-M7] - 2025-05-29
+### Changed
+- Update framework to 17.103.0-M5 to add azure micrometer metrics
+### Added
+- New counter `events.processed.counter` to update number of events processed metric
 
 # [17.103.0-M6] - 2025-05-28
 ### Changed
@@ -12,9 +17,9 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 - Update framework to 17.103.0-M2 in order to:
 - Change name of jndi value for self-healing from `event.error.handling.enabled` to `event.stream.self.healing.enabled`
 - Refactor the event buffer to:
-  - Run each event sent to the event listeners in its own transaction
-  - Update the `stream_status` table with `latest_known_position`
-  - Mark stream as 'up_to_date' when all events from event-buffer successfully processed
+    - Run each event sent to the event listeners in its own transaction
+    - Update the `stream_status` table with `latest_known_position`
+    - Mark stream as 'up_to_date' when all events from event-buffer successfully processed
 - New column `latest_known_position` in `stream_status table`
 - New column `is_up_to_date` in `stream_status table`
 - New liquibase scripts to update stream_status table
@@ -22,6 +27,36 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 ### Added
 - New SubscriptionManager class `NewSubscriptionManager`to handle the new way of processing events
 - New replacement StreamStatusRepository class for data access of stream_status table
+
+# [17.103.0-M4] - 2025-05-23
+### Changed 
+- Insert into stream_buffer table during event publishing is now idempotent
+- Update framework-libraries to 17.103.0-M3 for:
+  - Move of prometheus metrics to cpp-platform-libraries in with the new azure metrics 
+### Added 
+- Add micrometer counter base class 
+
+# [17.103.0-M3] - 2025-04-30
+### Changed 
+- Update framework to 17.103.0-M2 in order to:
+- Change name of jndi value for self-healing from `event.error.handling.enabled` to `event.stream.self.healing.enabled`
+
+# [17.103.0-M2] - 2025-04-29
+### Changed
+- Refactor the event buffer to:
+  - Run each event sent to the event listeners in its own transaction
+  - Update the `stream_status` table with `latest_known_position`
+  - Mark stream as 'up_to_date' when all events from event-buffer successfully processed
+- New column `latest_known_position` in `stream_status table`
+- New column `is_up_to_date` in `stream_status table`
+- New liquibase scripts to update stream_status table
+### Added
+- New SubscriptionManager class `NewSubscriptionManager`to handle the new way of processing events
+- New replacement StreamStatusRepository class for data access of stream_status table 
+
+# [17.103.0-M1] - 2025-04-28
+### Changed
+- Release file-service extraction changes (via framework-libraries)
 
 ## [17.102.3] - 2025-04-16
 ### Changed
