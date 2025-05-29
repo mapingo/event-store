@@ -4,6 +4,12 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+# [17.103.0-M7] - 2025-05-29
+### Changed
+- Update framework to 17.103.0-M5 to add azure micrometer metrics
+### Added
+- New counter `events.processed.counter` to update number of events processed metric
+
 # [17.103.0-M6] - 2025-05-28
 ### Changed
 - Fix ReplayEventToEventListener, ReplayEventToEventIndexer, CatchUp command execution to work with selfhealing feature
