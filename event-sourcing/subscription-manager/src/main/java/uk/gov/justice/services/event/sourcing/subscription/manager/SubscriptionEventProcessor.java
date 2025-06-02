@@ -64,6 +64,7 @@ public class SubscriptionEventProcessor {
             final JsonEnvelope eventJsonEnvelope,
             final String componentName) {
 
+        micrometerMetricsCounters.incrementEventsProcessedCount();
 
         final Metadata metadata = eventJsonEnvelope.metadata();
         final String name = metadata.name();
@@ -94,10 +95,13 @@ public class SubscriptionEventProcessor {
                 }
 
                 eventProcessed.set(true);
+
+                micrometerMetricsCounters.incrementEventsSucceededCount();
+            }   else {
+                micrometerMetricsCounters.incrementEventsIgnoredCount();
             }
 
             transactionHandler.commit(userTransaction);
-            micrometerMetricsCounters.incrementEventsProcessedCount();
 
             return eventProcessed.get();
 

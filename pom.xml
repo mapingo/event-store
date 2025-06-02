@@ -29,6 +29,7 @@
         <module>event-tracking</module>
         <module>event-store-management</module>
         <module>healthchecks</module>
+        <module>event-store-metric-meters</module>
     </modules>
 
     <scm>
@@ -39,7 +40,7 @@
 
     <properties>
         <cpp.repo.name>event-store</cpp.repo.name>
-        <framework.version>17.103.0-M5</framework.version>
+        <framework.version>17.103.0-M6</framework.version>
     </properties>
 
     <dependencyManagement>

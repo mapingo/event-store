@@ -4,6 +4,11 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+# [17.103.0-M8] - 2025-06-03
+### Changed
+- Implement micrometer gauges and counters
+- Update framework to 17.103.0-M6
+
 # [17.103.0-M7] - 2025-05-29
 ### Changed
 - Update framework to 17.103.0-M5 to add azure micrometer metrics

@@ -1,0 +1,67 @@
+package uk.gov.justice.eventstore.metrics.meters.gauges;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.OUT_OF_DATE_EVENT_STREAMS_GAUGE_NAME;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+
+@ExtendWith(MockitoExtension.class)
+public class OutOfDateEventStreamsGaugeMeterTest {
+
+    @Mock
+    private EventMetricsRepository eventMetricsRepository;
+
+    @Mock
+    private Logger logger;
+
+    @InjectMocks
+    private OutOfDateEventStreamsGaugeMeter outOfDateEventStreamsGaugeMeter;
+
+    @Test
+    public void shouldGetTheCountOfTheTheNumberOfOutOfDateEventStreams() throws Exception {
+
+        final Integer numberOfOutOfDateStreams = 266;
+
+        when(eventMetricsRepository.countOutOfDateStreams()).thenReturn(numberOfOutOfDateStreams);
+        when(logger.isDebugEnabled()).thenReturn(false);
+
+        assertThat(outOfDateEventStreamsGaugeMeter.measure(), is(numberOfOutOfDateStreams));
+
+        verify(logger, never()).debug(anyString());
+    }
+
+    @Test
+    public void shouldLogNumberOfOutOfDateStreamsIfDebugIsEnabled() throws Exception {
+
+        final Integer numberOfOutOfDateStreams = 23;
+
+        when(eventMetricsRepository.countOutOfDateStreams()).thenReturn(numberOfOutOfDateStreams);
+        when(logger.isDebugEnabled()).thenReturn(true);
+
+        assertThat(outOfDateEventStreamsGaugeMeter.measure(), is(numberOfOutOfDateStreams));
+
+        verify(logger).debug("Micrometer counting number of out of date event streams. Number of out-of-date streams: 23");
+    }
+
+    @Test
+    public void shouldGetTheCorrectMeterName() throws Exception {
+
+        assertThat(outOfDateEventStreamsGaugeMeter.metricName(), is(OUT_OF_DATE_EVENT_STREAMS_GAUGE_NAME));
+    }
+
+    @Test
+    public void shouldGetTheCorrectMeterDescription() throws Exception {
+
+        assertThat(outOfDateEventStreamsGaugeMeter.metricDescription(), is("The current number of streams that are out of date"));
+    }
+}
