@@ -13,6 +13,7 @@ import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamEr
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHandlingException;
 import uk.gov.justice.services.event.sourcing.subscription.manager.TransactionHandler;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.metrics.micrometer.counters.MicrometerMetricsCounters;
 
 import java.util.UUID;
 
@@ -45,6 +46,9 @@ public class StreamErrorStatusHandlerTest {
     private TransactionHandler transactionHandler;
 
     @Mock
+    private MicrometerMetricsCounters micrometerMetricsCounters;
+
+    @Mock
     private Logger logger;
 
     @InjectMocks
@@ -64,8 +68,9 @@ public class StreamErrorStatusHandlerTest {
 
         streamErrorStatusHandler.onStreamProcessingFailure(jsonEnvelope, nullPointerException, componentName);
 
-        final InOrder inOrder = inOrder(transactionHandler, streamErrorRepository);
+        final InOrder inOrder = inOrder(micrometerMetricsCounters, transactionHandler, streamErrorRepository);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsFailedCount();
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(streamErrorRepository).markStreamAsErrored(streamError);
         inOrder.verify(transactionHandler).commit(userTransaction);
@@ -94,8 +99,9 @@ public class StreamErrorStatusHandlerTest {
 
         streamErrorStatusHandler.onStreamProcessingFailure(jsonEnvelope, nullPointerException, componentName);
 
-        final InOrder inOrder = inOrder(transactionHandler, streamErrorRepository, logger);
+        final InOrder inOrder = inOrder(micrometerMetricsCounters, transactionHandler, streamErrorRepository, logger);
 
+        inOrder.verify(micrometerMetricsCounters).incrementEventsFailedCount();
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(streamErrorRepository).markStreamAsErrored(streamError);
         inOrder.verify(transactionHandler).rollback(userTransaction);
@@ -103,5 +109,4 @@ public class StreamErrorStatusHandlerTest {
 
         verify(transactionHandler, never()).commit(userTransaction);
     }
-
 }
