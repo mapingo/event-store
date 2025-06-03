@@ -11,6 +11,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.event.sourcing.subscription.manager.EventOrderingStatus.EVENT_ALREADY_PROCESSED;
 import static uk.gov.justice.services.event.sourcing.subscription.manager.EventOrderingStatus.EVENT_CORRECTLY_ORDERED;
@@ -25,6 +26,7 @@ import uk.gov.justice.services.event.sourcing.subscription.error.MissingSourceEx
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingStreamIdException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.metrics.micrometer.counters.MicrometerMetricsCounters;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -41,7 +43,6 @@ import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
 public class StreamStatusServiceTest {
-
 
     @Mock
     private NewStreamStatusRepository newStreamStatusRepository;
@@ -60,6 +61,9 @@ public class StreamStatusServiceTest {
 
     @Mock
     private TransactionHandler transactionHandler;
+
+    @Mock
+    private MicrometerMetricsCounters micrometerMetricsCounters;
 
     @Mock
     private UtcClock clock;
@@ -123,6 +127,7 @@ public class StreamStatusServiceTest {
         inOrder.verify(transactionHandler).commit(userTransaction);
 
         verify(newEventBufferManager, never()).addToBuffer(incomingJsonEnvelope, componentName);
+        verifyNoInteractions(micrometerMetricsCounters);
     }
 
     @Test
@@ -181,6 +186,8 @@ public class StreamStatusServiceTest {
                 componentName);
         inOrder.verify(newEventBufferManager).addToBuffer(incomingJsonEnvelope, componentName);
         inOrder.verify(transactionHandler).commit(userTransaction);
+
+        verifyNoInteractions(micrometerMetricsCounters);
     }
 
     @Test
@@ -221,6 +228,7 @@ public class StreamStatusServiceTest {
                 transactionHandler,
                 newStreamStatusRepository,
                 latestKnownPositionAndIsUpToDateUpdater,
+                micrometerMetricsCounters,
                 logger,
                 newEventBufferManager);
 
@@ -241,6 +249,7 @@ public class StreamStatusServiceTest {
                 streamId,
                 source,
                 componentName);
+        inOrder.verify(micrometerMetricsCounters).incrementEventsIgnoredCount();
         inOrder.verify(logger).info("Duplicate incoming event detected. Event already processed; ignoring. eventId: '0fac71b5-3e61-4ec1-b1d5-e8d85b1e0100', streamId: '1bc83024-d11a-4177-8892-1592b3741cc0', incomingEventPositionInStream '23' currentStreamPosition: '99'");
         inOrder.verify(transactionHandler).commit(userTransaction);
 
@@ -288,6 +297,7 @@ public class StreamStatusServiceTest {
         inOrder.verify(transactionHandler).rollback(userTransaction);
 
         verify(transactionHandler, never()).commit(userTransaction);
+        verifyNoInteractions(micrometerMetricsCounters);
     }
 
     @Test
@@ -330,6 +340,8 @@ public class StreamStatusServiceTest {
 
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(transactionHandler).rollback(userTransaction);
+
+        verifyNoInteractions(micrometerMetricsCounters);
     }
 
     @Test
@@ -352,6 +364,8 @@ public class StreamStatusServiceTest {
                 () -> streamStatusService.handleStreamStatusUpdates(incomingJsonEnvelope, componentName));
 
         assertThat(missingStreamIdException.getMessage(), is("No streamId found in event: name 'some-name', eventId 'ab7be3df-8fbe-41e7-a511-e1d6af297491'"));
+
+        verifyNoInteractions(micrometerMetricsCounters);
     }
 
     @Test
@@ -376,6 +390,8 @@ public class StreamStatusServiceTest {
                 () -> streamStatusService.handleStreamStatusUpdates(incomingJsonEnvelope, componentName));
 
         assertThat(missingSourceException.getMessage(), is("No source found in event: name 'some-name', eventId 'abffce7f-6ccb-413b-a43e-9bb61386c000'"));
+
+        verifyNoInteractions(micrometerMetricsCounters);
     }
 
     @Test
@@ -402,5 +418,7 @@ public class StreamStatusServiceTest {
                 () -> streamStatusService.handleStreamStatusUpdates(incomingJsonEnvelope, componentName));
 
         assertThat(missingStreamIdException.getMessage(), is("No position found in event: name 'some-name', eventId '7695b98f-99a8-49b0-b00e-2d9b2c1c4d9a'"));
+
+        verifyNoInteractions(micrometerMetricsCounters);
     }
 }

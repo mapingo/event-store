@@ -12,6 +12,7 @@ import uk.gov.justice.services.event.sourcing.subscription.error.MissingSourceEx
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingStreamIdException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.metrics.micrometer.counters.MicrometerMetricsCounters;
 
 import java.util.UUID;
 
@@ -40,6 +41,9 @@ public class StreamStatusService {
 
     @Inject
     private TransactionHandler transactionHandler;
+
+    @Inject
+    private MicrometerMetricsCounters micrometerMetricsCounters;
 
     @Inject
     private UtcClock clock;
@@ -84,12 +88,14 @@ public class StreamStatusService {
             switch (eventOrderingStatus) {
                 case EVENT_OUT_OF_ORDER ->
                         newEventBufferManager.addToBuffer(incomingJsonEnvelope, componentName);
-                case EVENT_ALREADY_PROCESSED ->
+                case EVENT_ALREADY_PROCESSED -> {
+                    micrometerMetricsCounters.incrementEventsIgnoredCount();
                     logger.info(format("Duplicate incoming event detected. Event already processed; ignoring. eventId: '%s', streamId: '%s', incomingEventPositionInStream '%d' currentStreamPosition: '%d'",
                             eventId,
                             streamId,
                             streamPositions.incomingEventPosition(),
                             streamPositions.currentStreamPosition()));
+                }
             }
 
             transactionHandler.commit(userTransaction);
