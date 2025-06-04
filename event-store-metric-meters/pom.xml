@@ -22,6 +22,10 @@
             <groupId>uk.gov.justice.metrics</groupId>
             <artifactId>metrics-micrometer-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.event-store</groupId>
+            <artifactId>event-buffer-core</artifactId>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
@@ -43,6 +47,12 @@
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-core</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.event-store</groupId>
+            <artifactId>event-buffer-core</artifactId>
+            <version>17.103.0-M9-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
