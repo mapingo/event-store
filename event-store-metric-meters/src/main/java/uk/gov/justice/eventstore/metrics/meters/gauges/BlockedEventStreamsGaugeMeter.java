@@ -1,9 +1,10 @@
 package uk.gov.justice.eventstore.metrics.meters.gauges;
 
 import static java.lang.String.format;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.BLOCKED_EVENT_STREAMS_GAUGE_NAME;
-import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.COUNT_EVENT_STREAMS_GAUGE_NAME;
 
+import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
 import uk.gov.justice.services.metrics.micrometer.meters.GaugeMetricsMeter;
 
 import javax.inject.Inject;
@@ -16,22 +17,31 @@ public class BlockedEventStreamsGaugeMeter implements GaugeMetricsMeter {
     private Logger logger;
 
     @Inject
-    private EventMetricsRepository eventMetricsRepository;
+    private StreamMetricsProvider streamMetricsProvider;
 
     @Override
     public int measure() {
-        final Integer numberOfBlockedStreams = eventMetricsRepository.countBlockedStreams();
 
+        final String component = EVENT_LISTENER;
         if (logger.isDebugEnabled()) {
-            logger.debug(format("Micrometer counting number of blocked event streams. Number of blocked streams: %d", numberOfBlockedStreams));
+            logger.debug(format("Micrometer counting number of blocked %s event streams.", component));
         }
 
-        return numberOfBlockedStreams;
+        final int blockedStreamCount = streamMetricsProvider
+                .getMetrics(component)
+                .map(StreamMetrics::blockedStreamCount)
+                .orElse(0);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(format("Number of blocked %s event streams: %d", component, blockedStreamCount));
+        }
+
+        return blockedStreamCount;
     }
 
     @Override
     public String metricName() {
-         return BLOCKED_EVENT_STREAMS_GAUGE_NAME;
+        return BLOCKED_EVENT_STREAMS_GAUGE_NAME;
     }
 
     @Override

@@ -4,6 +4,10 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+# [17.103.0-M9] - 2025-06-05
+### Changed
+- Added temporary inefficient metrics query and plugged results into micrometer gauges 
+
 # [17.103.0-M8] - 2025-06-03
 ### Changed
 - Implement micrometer gauges and counters

@@ -1,9 +1,10 @@
 package uk.gov.justice.eventstore.metrics.meters.gauges;
 
 import static java.lang.String.format;
-import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.OUT_OF_DATE_EVENT_STREAMS_GAUGE_NAME;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.UP_TO_DATE_EVENT_STREAMS_GAUGE_NAME;
 
+import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
 import uk.gov.justice.services.metrics.micrometer.meters.GaugeMetricsMeter;
 
 import javax.inject.Inject;
@@ -16,17 +17,25 @@ public class UpToDateEventStreamsGaugeMeter implements GaugeMetricsMeter {
     private Logger logger;
 
     @Inject
-    private EventMetricsRepository eventMetricsRepository;
+    private StreamMetricsProvider streamMetricsProvider;
 
     @Override
     public int measure() {
-        final Integer numberOfUpToDateStreams = eventMetricsRepository.countUpToDateStreams();
-
+        final String component = EVENT_LISTENER;
         if (logger.isDebugEnabled()) {
-            logger.debug(format("Micrometer counting number of up to date event streams. Number of up-to-date streams: %d", numberOfUpToDateStreams));
+            logger.debug(format("Micrometer counting number of up to date %s event streams.", component));
         }
 
-        return numberOfUpToDateStreams;
+        final int eventStreamCount = streamMetricsProvider
+                .getMetrics(component)
+                .map(StreamMetrics::upToDateStreamCount)
+                .orElse(0);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(format("Number of up to date %s event streams: %d", component, eventStreamCount));
+        }
+
+        return eventStreamCount;
     }
 
     @Override
