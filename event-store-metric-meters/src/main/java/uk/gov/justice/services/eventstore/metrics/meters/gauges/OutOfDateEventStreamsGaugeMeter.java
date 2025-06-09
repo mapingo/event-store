@@ -1,4 +1,4 @@
-package uk.gov.justice.eventstore.metrics.meters.gauges;
+package uk.gov.justice.services.eventstore.metrics.meters.gauges;
 
 import static java.lang.String.format;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;

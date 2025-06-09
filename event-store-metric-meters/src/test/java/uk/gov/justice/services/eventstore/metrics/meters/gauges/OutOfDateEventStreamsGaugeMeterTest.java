@@ -1,4 +1,4 @@
-package uk.gov.justice.eventstore.metrics.meters.gauges;
+package uk.gov.justice.services.eventstore.metrics.meters.gauges;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -13,6 +13,8 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.OUT_OF_DATE_EVENT_STREAMS_GAUGE_NAME;
 
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
+import uk.gov.justice.services.eventstore.metrics.meters.gauges.OutOfDateEventStreamsGaugeMeter;
+import uk.gov.justice.services.eventstore.metrics.meters.gauges.StreamMetricsProvider;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
