@@ -1,8 +1,8 @@
-package uk.gov.justice.eventstore.metrics.meters.gauges;
+package uk.gov.justice.services.eventstore.metrics.meters.gauges;
 
 import static java.lang.String.format;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.BLOCKED_EVENT_STREAMS_GAUGE_NAME;
+import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.UNBLOCKED_EVENT_STREAMS_GAUGE_NAME;
 
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
 import uk.gov.justice.services.metrics.micrometer.meters.GaugeMetricsMeter;
@@ -11,7 +11,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 
-public class BlockedEventStreamsGaugeMeter implements GaugeMetricsMeter {
+public class UnblockedEventStreamsGaugeMeter implements GaugeMetricsMeter {
 
     @Inject
     private Logger logger;
@@ -24,16 +24,16 @@ public class BlockedEventStreamsGaugeMeter implements GaugeMetricsMeter {
 
         final String component = EVENT_LISTENER;
         if (logger.isDebugEnabled()) {
-            logger.debug(format("Micrometer counting number of blocked %s event streams.", component));
+            logger.debug(format("Micrometer counting number of unblocked %s event streams.", component));
         }
 
         final int blockedStreamCount = streamMetricsProvider
                 .getMetrics(component)
-                .map(StreamMetrics::blockedStreamCount)
+                .map(StreamMetrics::unblockedStreamCount)
                 .orElse(0);
 
         if (logger.isDebugEnabled()) {
-            logger.debug(format("Number of blocked %s event streams: %d", component, blockedStreamCount));
+            logger.debug(format("Number of unblocked %s event streams: %d", component, blockedStreamCount));
         }
 
         return blockedStreamCount;
@@ -41,11 +41,11 @@ public class BlockedEventStreamsGaugeMeter implements GaugeMetricsMeter {
 
     @Override
     public String metricName() {
-        return BLOCKED_EVENT_STREAMS_GAUGE_NAME;
+        return UNBLOCKED_EVENT_STREAMS_GAUGE_NAME;
     }
 
     @Override
     public String metricDescription() {
-        return "The current number of streams that are blocked due to errors";
+        return "The current number of streams not in error";
     }
 }

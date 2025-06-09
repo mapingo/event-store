@@ -5,6 +5,11 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### [Unreleased] 
 
+# [17.103.0-M10] - 2025-06-09
+### Changed
+- Updgrade framework to 17.103.0-M8 for:
+ - Fix of deployment error if azure connection string is not in jndi (whether metrics are enabled or not)
+
 # [17.103.0-M9] - 2025-06-05
 ### Added
 - Added temporary inefficient metrics query and plugged results into micrometer gauges

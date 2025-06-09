@@ -1,4 +1,4 @@
-package uk.gov.justice.eventstore.metrics.meters.gauges;
+package uk.gov.justice.services.eventstore.metrics.meters.gauges;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -14,6 +14,8 @@ import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterName
 
 
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
+import uk.gov.justice.services.eventstore.metrics.meters.gauges.CountEventStreamsGaugeMeter;
+import uk.gov.justice.services.eventstore.metrics.meters.gauges.StreamMetricsProvider;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
