@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+### Added
+- Add means of getting micrometer tags for component and list of sources from subscription registry
 
 # [17.103.0-M10] - 2025-06-09
 ### Changed
