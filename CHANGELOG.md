@@ -5,6 +5,10 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### [Unreleased] 
 
+# [17.103.0-M12] - 2025-06-12
+### Removed
+- Remove erroneous event-buffer liquibase script `015-create-stream-metrics-materialised-view.xml`
+
 # [17.103.0-M11] - 2025-06-11
 ### Added
 - Add means of getting micrometer tags for component and list of sources from subscription registry
