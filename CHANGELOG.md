@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+### Added
+- Add sql scripts to allow rollback of individual liquibase scripts
 
 # [17.103.0-M12] - 2025-06-12
 ### Removed

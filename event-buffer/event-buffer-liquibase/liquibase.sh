@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CONTEXT_NAME=framework
-EVENT_STORE_VERSION=17.102.3-SNAPSHOT
+EVENT_STORE_VERSION=17.103.0-M13-SNAPSHOT
 
 #fail script on error
 set -e
