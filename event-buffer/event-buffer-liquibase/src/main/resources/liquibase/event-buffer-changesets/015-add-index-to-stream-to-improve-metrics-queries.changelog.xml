@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="stream_buffer-015" author="TechPod"
+               logicalFilePath="liquibase/event-buffer-changesets/015-add-index-to-stream-to-improve-metrics-queries.changelog.xml">
+
+        <createIndex indexName="stream_status_src_comp_idx"
+                     tableName="stream_status">
+            <column name="is_up_to_date"/>
+            <column name="stream_error_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex tableName="stream_status" indexName="stream_status_src_comp_idx" />
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>
