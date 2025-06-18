@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+### Changed
+- Metrics lookup is now done using `source` and `component`
 
 # [17.103.0-M13] - 2025-06-18
 ### Added

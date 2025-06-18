@@ -1,42 +1,29 @@
 package uk.gov.justice.services.eventstore.metrics.meters.gauges;
 
-import static java.lang.String.format;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.STALE_EVENT_STREAMS_GAUGE_NAME;
 
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
 import uk.gov.justice.services.metrics.micrometer.meters.GaugeMetricsMeter;
 
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-
 public class OutOfDateEventStreamsGaugeMeter implements GaugeMetricsMeter {
 
-    @Inject
-    private StreamMetricsProvider streamMetricsProvider;
+    private final String source;
+    private final String component;
+    private final StreamMetricsProvider streamMetricsProvider;
 
-    @Inject
-    private Logger logger;
+    public OutOfDateEventStreamsGaugeMeter(final String source, final String component, final StreamMetricsProvider streamMetricsProvider) {
+        this.source = source;
+        this.component = component;
+        this.streamMetricsProvider = streamMetricsProvider;
+    }
 
     @Override
     public int measure() {
 
-        final String component = EVENT_LISTENER;
-        if (logger.isDebugEnabled()) {
-            logger.debug(format("Micrometer counting number of out of date %s event streams.", component));
-        }
-
-        final int eventStreamCount = streamMetricsProvider
-                .getMetrics(component)
+        return streamMetricsProvider
+                .getMetrics(source, component)
                 .map(StreamMetrics::outOfDateStreamCount)
                 .orElse(0);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(format("Number of out of date %s event streams: %d", component, eventStreamCount));
-        }
-
-        return eventStreamCount;
     }
 
     @Override
