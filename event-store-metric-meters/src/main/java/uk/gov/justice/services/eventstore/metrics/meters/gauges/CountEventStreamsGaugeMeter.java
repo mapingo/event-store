@@ -2,7 +2,7 @@ package uk.gov.justice.services.eventstore.metrics.meters.gauges;
 
 import static java.lang.String.format;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.COUNT_EVENT_STREAMS_GAUGE_NAME;
+import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.TOTAL_EVENT_STREAMS_GAUGE_NAME;
 
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
 import uk.gov.justice.services.metrics.micrometer.meters.GaugeMetricsMeter;
@@ -40,7 +40,7 @@ public class CountEventStreamsGaugeMeter implements GaugeMetricsMeter {
 
     @Override
     public String metricName() {
-         return COUNT_EVENT_STREAMS_GAUGE_NAME;
+         return TOTAL_EVENT_STREAMS_GAUGE_NAME;
     }
 
     @Override

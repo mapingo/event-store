@@ -7,6 +7,7 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 ### Added
 - Add sql scripts to allow rollback of individual liquibase scripts
 - Add index `stream_status_src_comp_idx` on `stream_status` table to improve stream metrics query
+- Update metrics names to match design document specification
 
 # [17.103.0-M12] - 2025-06-12
 ### Removed

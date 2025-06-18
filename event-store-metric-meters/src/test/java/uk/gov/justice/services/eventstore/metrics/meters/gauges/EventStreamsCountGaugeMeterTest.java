@@ -10,12 +10,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.COUNT_EVENT_STREAMS_GAUGE_NAME;
-
+import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterNames.TOTAL_EVENT_STREAMS_GAUGE_NAME;
 
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
-import uk.gov.justice.services.eventstore.metrics.meters.gauges.CountEventStreamsGaugeMeter;
-import uk.gov.justice.services.eventstore.metrics.meters.gauges.StreamMetricsProvider;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,7 +78,7 @@ public class EventStreamsCountGaugeMeterTest {
 
     @Test
     public void shouldGetTheCorrectMeterName() throws Exception {
-        assertThat(countEventStreamsGaugeMeter.metricName(), is(COUNT_EVENT_STREAMS_GAUGE_NAME));
+        assertThat(countEventStreamsGaugeMeter.metricName(), is(TOTAL_EVENT_STREAMS_GAUGE_NAME));
     }
 
     @Test
