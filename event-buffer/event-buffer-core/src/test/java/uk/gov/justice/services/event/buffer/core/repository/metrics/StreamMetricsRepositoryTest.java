@@ -3,13 +3,12 @@ package uk.gov.justice.services.event.buffer.core.repository.metrics;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 
@@ -19,13 +18,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -35,15 +34,14 @@ public class StreamMetricsRepositoryTest {
 
     private static final String STREAM_METRICS_SQL = """
             SELECT
-                    source,
-                    component,
-                    COUNT(*)                                              AS stream_count,
-                    COUNT(*) FILTER (WHERE is_up_to_date)                 AS up_to_date_streams_count,
-                    COUNT(*) FILTER (WHERE NOT is_up_to_date)             AS out_of_date_streams_count,
-                    COUNT(*) FILTER (WHERE stream_error_id IS NOT NULL)   AS blocked_streams_count,
-                    COUNT(*) FILTER (WHERE stream_error_id IS NULL)       AS unblocked_streams_count
-                FROM stream_status
-                GROUP BY source, component;
+                total_count,
+                blocked_count,
+                unblocked_count,
+                stale_count,
+                fresh_count
+            FROM stream_statistic
+            WHERE source = ?
+            AND component = ?;
             """;
 
     private static final String CALCULATE_STREAM_STATISTIC = """
@@ -79,12 +77,13 @@ public class StreamMetricsRepositoryTest {
     @Test
     public void shouldGetMetricsFromTheStreamStatusTable() throws Exception {
 
-        final StreamMetrics eventListenerStreamMetrics = new StreamMetrics(
-                "hearing",
-                EVENT_LISTENER, 234, 329, 23, 87, 78);
-        final StreamMetrics eventProcessorStreamMetrics = new StreamMetrics(
-                "hearing",
-                EVENT_PROCESSOR, 23, 64, 25, 477, 34);
+        final String source = "some-source";
+        final String component = "some-component";
+        final int streamCount = 23;
+        final int upToDateStreamCount = 345;
+        final int outOfDateStreamCount = 9782;
+        final int blockedStreamCount = 252;
+        final int unblockedStreamCount = 727;
 
         final DataSource dataSource = mock(DataSource.class);
         final Connection connection = mock(Connection.class);
@@ -95,36 +94,46 @@ public class StreamMetricsRepositoryTest {
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(STREAM_METRICS_SQL)).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.next()).thenReturn(true, true, false);
+        when(resultSet.next()).thenReturn(true);
 
-        when(resultSet.getString("source")).thenReturn(eventListenerStreamMetrics.source(), eventProcessorStreamMetrics.source());
-        when(resultSet.getString("component")).thenReturn(eventListenerStreamMetrics.component(), eventProcessorStreamMetrics.component());
-        when(resultSet.getInt("stream_count")).thenReturn(eventListenerStreamMetrics.streamCount(), eventProcessorStreamMetrics.streamCount());
-        when(resultSet.getInt("up_to_date_streams_count")).thenReturn(eventListenerStreamMetrics.upToDateStreamCount(), eventProcessorStreamMetrics.upToDateStreamCount());
-        when(resultSet.getInt("out_of_date_streams_count")).thenReturn(eventListenerStreamMetrics.outOfDateStreamCount(), eventProcessorStreamMetrics.outOfDateStreamCount());
-        when(resultSet.getInt("blocked_streams_count")).thenReturn(eventListenerStreamMetrics.blockedStreamCount(), eventProcessorStreamMetrics.blockedStreamCount());
-        when(resultSet.getInt("unblocked_streams_count")).thenReturn(eventListenerStreamMetrics.unblockedStreamCount(), eventProcessorStreamMetrics.unblockedStreamCount());
+        when(resultSet.getInt("total_count")).thenReturn(streamCount);
+        when(resultSet.getInt("fresh_count")).thenReturn(upToDateStreamCount);
+        when(resultSet.getInt("stale_count")).thenReturn(outOfDateStreamCount);
+        when(resultSet.getInt("blocked_count")).thenReturn(blockedStreamCount);
+        when(resultSet.getInt("unblocked_count")).thenReturn(unblockedStreamCount);
 
-        final List<StreamMetrics> streamMetrics = streamMetricsRepository.getStreamMetrics();
-        assertThat(streamMetrics.size(), is(2));
-        assertThat(streamMetrics.get(0), is(eventListenerStreamMetrics));
-        assertThat(streamMetrics.get(1), is(eventProcessorStreamMetrics));
+        final Optional<StreamMetrics> streamMetrics = streamMetricsRepository.getStreamMetrics(source, component);
 
-        verify(connection).close();
-        verify(preparedStatement).close();
-        verify(resultSet).close();
+        if (streamMetrics.isPresent()) {
+            assertThat(streamMetrics.get().source(), is(source));
+            assertThat(streamMetrics.get().component(), is(component));
+            assertThat(streamMetrics.get().streamCount(), is(streamCount));
+            assertThat(streamMetrics.get().upToDateStreamCount(), is(upToDateStreamCount));
+            assertThat(streamMetrics.get().outOfDateStreamCount(), is(outOfDateStreamCount));
+            assertThat(streamMetrics.get().blockedStreamCount(), is(blockedStreamCount));
+            assertThat(streamMetrics.get().unblockedStreamCount(), is(unblockedStreamCount));
+        } else {
+            fail();
+        }
+
+        final InOrder inOrder = inOrder(resultSet, preparedStatement, connection);
+        inOrder.verify(preparedStatement).setString(1, source);
+        inOrder.verify(preparedStatement).setString(2, component);
+        inOrder.verify(resultSet).close();
+        inOrder.verify(preparedStatement).close();
+        inOrder.verify(connection).close();
     }
 
     @Test
     public void shouldThrowMetricsJdbcExceptionIfDatabaseAccessFails() throws Exception {
 
-        final StreamMetrics eventListenerStreamMetrics = new StreamMetrics(
-                "hearing",
-                EVENT_LISTENER, 234, 329, 23, 87, 78);
-        final StreamMetrics eventProcessorStreamMetrics = new StreamMetrics(
-                "hearing",
-                EVENT_PROCESSOR, 23, 64, 25, 477, 34);
         final SQLException sqlException = new SQLException("Ooops");
+        final String source = "some-source";
+        final String component = "some-component";
+        final int streamCount = 23;
+        final int upToDateStreamCount = 345;
+        final int outOfDateStreamCount = 9782;
+        final int blockedStreamCount = 252;
 
         final DataSource dataSource = mock(DataSource.class);
         final Connection connection = mock(Connection.class);
@@ -135,14 +144,21 @@ public class StreamMetricsRepositoryTest {
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(STREAM_METRICS_SQL)).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.next()).thenThrow(sqlException);
+        when(resultSet.next()).thenReturn(true);
 
-        final MetricsJdbcException metricsJdbcException = assertThrows(MetricsJdbcException.class, () -> streamMetricsRepository.getStreamMetrics());
+        when(resultSet.getInt("total_count")).thenReturn(streamCount);
+        when(resultSet.getInt("fresh_count")).thenReturn(upToDateStreamCount);
+        when(resultSet.getInt("stale_count")).thenReturn(outOfDateStreamCount);
+        when(resultSet.getInt("blocked_count")).thenReturn(blockedStreamCount);
+        when(resultSet.getInt("unblocked_count")).thenThrow(sqlException);
+
+        final MetricsJdbcException metricsJdbcException = assertThrows(
+                MetricsJdbcException.class,
+                () -> streamMetricsRepository.getStreamMetrics(source, component));
+
         assertThat(metricsJdbcException.getCause(), is(sqlException));
         assertThat(metricsJdbcException.getMessage(), is("Failed to get metrics from stream_status table"));
 
-        verify(connection).close();
-        verify(preparedStatement).close();
         verify(resultSet).close();
     }
 

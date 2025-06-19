@@ -1,6 +1,5 @@
 package uk.gov.justice.services.eventstore.metrics.meters.statistic;
 
-import org.slf4j.Logger;
 import uk.gov.justice.services.ejb.timer.TimerServiceManager;
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetricsRepository;
 import uk.gov.justice.services.metrics.micrometer.config.MetricsConfiguration;
@@ -15,6 +14,8 @@ import javax.ejb.Startup;
 import javax.ejb.Timeout;
 import javax.ejb.TimerService;
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
 
 @Singleton
 @Startup

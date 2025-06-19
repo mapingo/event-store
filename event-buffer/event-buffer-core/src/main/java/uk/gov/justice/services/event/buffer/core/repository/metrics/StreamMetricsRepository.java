@@ -1,5 +1,8 @@
 package uk.gov.justice.services.event.buffer.core.repository.metrics;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 
 import java.sql.Connection;
@@ -7,8 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -16,15 +18,14 @@ public class StreamMetricsRepository {
 
     private static final String STREAM_METRICS_SQL = """
             SELECT
-                    source,
-                    component,
-                    COUNT(*)                                              AS stream_count,
-                    COUNT(*) FILTER (WHERE is_up_to_date)                 AS up_to_date_streams_count,
-                    COUNT(*) FILTER (WHERE NOT is_up_to_date)             AS out_of_date_streams_count,
-                    COUNT(*) FILTER (WHERE stream_error_id IS NOT NULL)   AS blocked_streams_count,
-                    COUNT(*) FILTER (WHERE stream_error_id IS NULL)       AS unblocked_streams_count
-                FROM stream_status
-                GROUP BY source, component;
+                total_count,
+                blocked_count,
+                unblocked_count,
+                stale_count,
+                fresh_count
+            FROM stream_statistic
+            WHERE source = ?
+            AND component = ?;
             """;
 
     private static final String CALCULATE_STREAM_STATISTIC_SQL = """
@@ -54,42 +55,44 @@ public class StreamMetricsRepository {
     @Inject
     private ViewStoreJdbcDataSourceProvider viewStoreJdbcDataSourceProvider;
 
-    public List<StreamMetrics> getStreamMetrics() {
+    public Optional<StreamMetrics> getStreamMetrics(final String source, final String component) {
 
         try (final Connection connection = viewStoreJdbcDataSourceProvider.getDataSource().getConnection();
-             final PreparedStatement preparedStatement = connection.prepareStatement(STREAM_METRICS_SQL);
-             final ResultSet resultSet = preparedStatement.executeQuery()) {
+             final PreparedStatement preparedStatement = connection.prepareStatement(STREAM_METRICS_SQL)) {
+             preparedStatement.setString(1, source);
+             preparedStatement.setString(2, component);
 
-            final ArrayList<StreamMetrics> streamMetrics = new ArrayList<>();
+             try(final ResultSet resultSet = preparedStatement.executeQuery()){
 
-            while (resultSet.next()) {
-                final String source = resultSet.getString("source");
-                final String component = resultSet.getString("component");
-                final int streamCount = resultSet.getInt("stream_count");
-                final int upToDateStreamsCount = resultSet.getInt("up_to_date_streams_count");
-                final int outOfDateStreamsCount = resultSet.getInt("out_of_date_streams_count");
-                final int blockedStreamsCount = resultSet.getInt("blocked_streams_count");
-                final int unblockedStreamsCount = resultSet.getInt("unblocked_streams_count");
+                if (resultSet.next()) {
+                    final int streamCount = resultSet.getInt("total_count");
+                    final int upToDateStreamsCount = resultSet.getInt("fresh_count");
+                    final int outOfDateStreamsCount = resultSet.getInt("stale_count");
+                    final int blockedStreamsCount = resultSet.getInt("blocked_count");
+                    final int unblockedStreamsCount = resultSet.getInt("unblocked_count");
 
-                streamMetrics.add(new StreamMetrics(
-                        source,
-                        component,
-                        streamCount,
-                        upToDateStreamsCount,
-                        outOfDateStreamsCount,
-                        blockedStreamsCount,
-                        unblockedStreamsCount
-                ));
+                    final StreamMetrics streamMetrics = new StreamMetrics(
+                            source,
+                            component,
+                            streamCount,
+                            upToDateStreamsCount,
+                            outOfDateStreamsCount,
+                            blockedStreamsCount,
+                            unblockedStreamsCount
+                    );
+
+                    return of(streamMetrics);
+                }
+
+                return empty();
             }
-
-            return streamMetrics;
 
         } catch (final SQLException e) {
             throw new MetricsJdbcException("Failed to get metrics from stream_status table", e);
         }
     }
 
-    public void calculateStreamStatistic(Timestamp freshnessLimit) {
+    public void calculateStreamStatistic(final Timestamp freshnessLimit) {
         try (final Connection connection = viewStoreJdbcDataSourceProvider.getDataSource().getConnection()) {
             if (!isUpdateNeeded(connection, freshnessLimit)) {
                 return;
@@ -104,7 +107,7 @@ public class StreamMetricsRepository {
 
     }
 
-    private boolean isUpdateNeeded(Connection connection, Timestamp freshnessLimit) throws SQLException {
+    private boolean isUpdateNeeded(final Connection connection, final Timestamp freshnessLimit) throws SQLException {
         try (final PreparedStatement checkMostRecentStatement = connection.prepareStatement(MOST_RECENT_UPDATED_AT_SQL);
              final ResultSet resultSet = checkMostRecentStatement.executeQuery()) {
 
