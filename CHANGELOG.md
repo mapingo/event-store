@@ -3,11 +3,12 @@ All notable changes to this project will be documented in this file, which follo
 on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
-### [Unreleased] 
+### [Unreleased]
 ### Added
 - New table stream_statistic to include statistics of streams per source, component and state
 - Added StreamStatisticTimerBean to fill stream_statistic every configured milliseconds
 ### Changed
+- Add framework rest endpoint to fetch streams by errorHash
 - Metrics lookup is now done using `source` and `component`
 
 # [17.103.0-M13] - 2025-06-18
