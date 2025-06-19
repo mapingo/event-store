@@ -4,6 +4,9 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased] 
+### Added
+- New table stream_statistic to include statistics of streams per source, component and state
+- Added StreamStatisticTimerBean to fill stream_statistic every configured milliseconds
 ### Changed
 - Metrics lookup is now done using `source` and `component`
 
