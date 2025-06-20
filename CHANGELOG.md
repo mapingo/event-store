@@ -4,14 +4,19 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+
+# [17.103.0-M15] - 2025-06-20
+### Added
+- Global tags for micrometer gauges
+### Changed
+- Metrics lookup is now done using `source` and `component`
+- Individual Gauges refactored to Factory
+
+# [17.103.0-M14] - 2025-06-19
 ### Added
 - New table stream_statistic to include statistics of streams per source, component and state
 - Added StreamStatisticTimerBean to fill stream_statistic every configured milliseconds
-- Global tags for micrometer gauges
-### Changed
 - Add framework rest endpoint to fetch streams by errorHash
-- Metrics lookup is now done using `source` and `component`
-- Individual Gauges refactored to Factory
 
 # [17.103.0-M13] - 2025-06-18
 ### Added
