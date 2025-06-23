@@ -62,9 +62,7 @@ public class SubscriptionEventProcessor {
     @Transactional(value = NOT_SUPPORTED)
     public boolean processSingleEvent(
             final JsonEnvelope eventJsonEnvelope,
-            final String componentName) {
-
-        micrometerMetricsCounters.incrementEventsProcessedCount();
+            final String component) {
 
         final Metadata metadata = eventJsonEnvelope.metadata();
         final String name = metadata.name();
@@ -73,32 +71,34 @@ public class SubscriptionEventProcessor {
         final String source = metadata.source().orElseThrow(() -> new MissingSourceException(format("No source found in event: name '%s', eventId '%s'", name, eventId)));
         final Long eventPositionInStream = metadata.position().orElseThrow(() -> new MissingPositionInStreamException(format("No position found in event: name '%s', eventId '%s'", name, eventId)));
 
+        micrometerMetricsCounters.incrementEventsProcessedCount(source, component);
+        
         try {
             transactionHandler.begin(userTransaction);
 
-            final StreamPositions streamPositions = newStreamStatusRepository.lockRowAndGetPositions(streamId, source, componentName, eventPositionInStream);
+            final StreamPositions streamPositions = newStreamStatusRepository.lockRowAndGetPositions(streamId, source, component, eventPositionInStream);
             final EventOrderingStatus eventOrderingStatus = eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions);
 
             final AtomicBoolean eventProcessed = new AtomicBoolean(false);
             if (eventOrderingStatus == EVENT_CORRECTLY_ORDERED) {
-                final InterceptorChainProcessor interceptorChainProcessor = interceptorChainProcessorProducer.produceLocalProcessor(componentName);
+                final InterceptorChainProcessor interceptorChainProcessor = interceptorChainProcessorProducer.produceLocalProcessor(component);
                 final InterceptorContext interceptorContext = interceptorContextProvider.getInterceptorContext(eventJsonEnvelope);
 
                 interceptorChainProcessor.process(interceptorContext);
 
-                newStreamStatusRepository.updateCurrentPosition(streamId, source, componentName, eventPositionInStream);
-                newEventBufferRepository.remove(streamId, source, componentName, eventPositionInStream);
-                streamErrorRepository.markStreamAsFixed(streamId, source, componentName);
+                newStreamStatusRepository.updateCurrentPosition(streamId, source, component, eventPositionInStream);
+                newEventBufferRepository.remove(streamId, source, component, eventPositionInStream);
+                streamErrorRepository.markStreamAsFixed(streamId, source, component);
 
                 if (streamPositions.latestKnownStreamPosition() == eventPositionInStream) {
-                    newStreamStatusRepository.setUpToDate(true, streamId, source, componentName);
+                    newStreamStatusRepository.setUpToDate(true, streamId, source, component);
                 }
 
                 eventProcessed.set(true);
 
-                micrometerMetricsCounters.incrementEventsSucceededCount();
+                micrometerMetricsCounters.incrementEventsSucceededCount(source, component);
             }   else {
-                micrometerMetricsCounters.incrementEventsIgnoredCount();
+                micrometerMetricsCounters.incrementEventsIgnoredCount(source, component);
             }
 
             transactionHandler.commit(userTransaction);
@@ -107,7 +107,7 @@ public class SubscriptionEventProcessor {
 
         } catch (final Throwable e) {
             transactionHandler.rollback(userTransaction);
-            streamErrorStatusHandler.onStreamProcessingFailure(eventJsonEnvelope, e, componentName);
+            streamErrorStatusHandler.onStreamProcessingFailure(eventJsonEnvelope, e, source, component);
             throw new StreamProcessingException(format("Failed to process event. name: '%s', eventId: '%s', streamId: '%s'", name, eventId, streamId), e);
         }
     }

@@ -194,10 +194,10 @@ public class StreamStatusServiceTest {
     public void shouldLogAndNothingElseIfEventPreviouslyProcessed() throws Exception {
 
         final String name = "some-name";
-        final String componentName = "some-component";
+        final String source = "some-source";
+        final String component = "some-component";
         final UUID eventId = fromString("0fac71b5-3e61-4ec1-b1d5-e8d85b1e0100");
         final UUID streamId = fromString("1bc83024-d11a-4177-8892-1592b3741cc0");
-        final String source = "some-source";
         final long incomingPositionInStream = 23;
         final long currentStreamPosition = 99;
         final ZonedDateTime updatedAt = new UtcClock().now();
@@ -216,13 +216,13 @@ public class StreamStatusServiceTest {
         when(newStreamStatusRepository.lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 incomingPositionInStream)).thenReturn(streamPositions);
         when(streamPositions.currentStreamPosition()).thenReturn(currentStreamPosition);
         when(streamPositions.incomingEventPosition()).thenReturn(incomingPositionInStream);
         when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_ALREADY_PROCESSED);
 
-        assertThat(streamStatusService.handleStreamStatusUpdates(incomingJsonEnvelope, componentName), is(EVENT_ALREADY_PROCESSED));
+        assertThat(streamStatusService.handleStreamStatusUpdates(incomingJsonEnvelope, component), is(EVENT_ALREADY_PROCESSED));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
@@ -236,24 +236,24 @@ public class StreamStatusServiceTest {
         inOrder.verify(newStreamStatusRepository).insertIfNotExists(
                 streamId,
                 source,
-                componentName,
+                component,
                 updatedAt,
                 false);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 incomingPositionInStream);
         inOrder.verify(latestKnownPositionAndIsUpToDateUpdater).updateIfNecessary(
                 streamPositions,
                 streamId,
                 source,
-                componentName);
-        inOrder.verify(micrometerMetricsCounters).incrementEventsIgnoredCount();
+                component);
+        inOrder.verify(micrometerMetricsCounters).incrementEventsIgnoredCount(source, component);
         inOrder.verify(logger).info("Duplicate incoming event detected. Event already processed; ignoring. eventId: '0fac71b5-3e61-4ec1-b1d5-e8d85b1e0100', streamId: '1bc83024-d11a-4177-8892-1592b3741cc0', incomingEventPositionInStream '23' currentStreamPosition: '99'");
         inOrder.verify(transactionHandler).commit(userTransaction);
 
-        verify(newEventBufferManager, never()).addToBuffer(incomingJsonEnvelope, componentName);
+        verify(newEventBufferManager, never()).addToBuffer(incomingJsonEnvelope, component);
     }
 
     @Test

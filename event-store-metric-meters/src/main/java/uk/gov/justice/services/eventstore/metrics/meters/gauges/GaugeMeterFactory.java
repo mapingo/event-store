@@ -9,11 +9,12 @@ import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterName
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
 import uk.gov.justice.services.eventstore.metrics.tags.TagProvider.SourceComponentPair;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import javax.inject.Inject;
 
 public class GaugeMeterFactory {
 

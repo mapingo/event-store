@@ -61,16 +61,17 @@ public class StreamErrorStatusHandlerTest {
         final JsonEnvelope jsonEnvelope = mock(JsonEnvelope.class);
         final ExceptionDetails exceptionDetails = mock(ExceptionDetails.class);
         final StreamError streamError = mock(StreamError.class);
-        final String componentName = "SOME_COMPONENT";
+        final String source = "SOME_SOURCE";
+        final String component = "SOME_COMPONENT";
 
         when(exceptionDetailsRetriever.getExceptionDetailsFrom(nullPointerException)).thenReturn(exceptionDetails);
-        when(streamErrorConverter.asStreamError(exceptionDetails, jsonEnvelope, componentName)).thenReturn(streamError);
+        when(streamErrorConverter.asStreamError(exceptionDetails, jsonEnvelope, component)).thenReturn(streamError);
 
-        streamErrorStatusHandler.onStreamProcessingFailure(jsonEnvelope, nullPointerException, componentName);
+        streamErrorStatusHandler.onStreamProcessingFailure(jsonEnvelope, nullPointerException, source, component);
 
         final InOrder inOrder = inOrder(micrometerMetricsCounters, transactionHandler, streamErrorRepository);
 
-        inOrder.verify(micrometerMetricsCounters).incrementEventsFailedCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsFailedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(streamErrorRepository).markStreamAsErrored(streamError);
         inOrder.verify(transactionHandler).commit(userTransaction);
@@ -83,7 +84,8 @@ public class StreamErrorStatusHandlerTest {
 
         final NullPointerException nullPointerException = new NullPointerException();
         final StreamErrorHandlingException streamErrorHandlingException = new StreamErrorHandlingException("dsfkjh");
-        final String componentName = "SOME_COMPONENT";
+        final String source = "SOME_SOURCE";
+        final String component = "SOME_COMPONENT";
         final UUID streamId = fromString("788cc64e-d31e-46fb-975f-b19042bb0a13");
 
         final JsonEnvelope jsonEnvelope = mock(JsonEnvelope.class);
@@ -92,16 +94,16 @@ public class StreamErrorStatusHandlerTest {
         final StreamErrorDetails streamErrorDetails = mock(StreamErrorDetails.class);
 
         when(exceptionDetailsRetriever.getExceptionDetailsFrom(nullPointerException)).thenReturn(exceptionDetails);
-        when(streamErrorConverter.asStreamError(exceptionDetails, jsonEnvelope, componentName)).thenReturn(streamError);
+        when(streamErrorConverter.asStreamError(exceptionDetails, jsonEnvelope, component)).thenReturn(streamError);
         when(streamError.streamErrorDetails()).thenReturn(streamErrorDetails);
         when(streamErrorDetails.streamId()).thenReturn(streamId);
         doThrow(streamErrorHandlingException).when(streamErrorRepository).markStreamAsErrored(streamError);
 
-        streamErrorStatusHandler.onStreamProcessingFailure(jsonEnvelope, nullPointerException, componentName);
+        streamErrorStatusHandler.onStreamProcessingFailure(jsonEnvelope, nullPointerException, source, component);
 
         final InOrder inOrder = inOrder(micrometerMetricsCounters, transactionHandler, streamErrorRepository, logger);
 
-        inOrder.verify(micrometerMetricsCounters).incrementEventsFailedCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsFailedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(streamErrorRepository).markStreamAsErrored(streamError);
         inOrder.verify(transactionHandler).rollback(userTransaction);

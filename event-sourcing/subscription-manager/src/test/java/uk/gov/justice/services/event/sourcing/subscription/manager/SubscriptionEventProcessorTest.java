@@ -87,7 +87,7 @@ public class SubscriptionEventProcessorTest {
         final UUID streamId = randomUUID();
         final String eventName = "some-event-name";
         final String source = "some-source";
-        final String componentName = "some-component-name";
+        final String component = "some-component";
         final long eventPositionInStream = 7686;
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
@@ -106,13 +106,13 @@ public class SubscriptionEventProcessorTest {
         when(newStreamStatusRepository.lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream)).thenReturn(streamPositions);
         when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
-        when(interceptorChainProcessorProducer.produceLocalProcessor(componentName)).thenReturn(interceptorChainProcessor);
+        when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
         when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
 
-        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName), is(true));
+        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component), is(true));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
@@ -124,23 +124,23 @@ public class SubscriptionEventProcessorTest {
                 transactionHandler,
                 micrometerMetricsCounters);
 
-        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream);
         inOrder.verify(interceptorChainProcessor).process(interceptorContext);
-        inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, componentName, eventPositionInStream);
-        inOrder.verify(newEventBufferRepository).remove(streamId, source, componentName, eventPositionInStream);
-        inOrder.verify(streamErrorRepository).markStreamAsFixed(streamId, source, componentName);
-        inOrder.verify(newStreamStatusRepository).setUpToDate(true, streamId, source, componentName);
-        inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount();
+        inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, component, eventPositionInStream);
+        inOrder.verify(newEventBufferRepository).remove(streamId, source, component, eventPositionInStream);
+        inOrder.verify(streamErrorRepository).markStreamAsFixed(streamId, source, component);
+        inOrder.verify(newStreamStatusRepository).setUpToDate(true, streamId, source, component);
+        inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount(source, component);
         inOrder.verify(transactionHandler).commit(userTransaction);
 
         verify(transactionHandler, never()).rollback(userTransaction);
-        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount(source, component);
     }
 
     @Test
@@ -150,7 +150,7 @@ public class SubscriptionEventProcessorTest {
         final UUID streamId = randomUUID();
         final String eventName = "some-event-name";
         final String source = "some-source";
-        final String componentName = "some-component-name";
+        final String component = "some-component";
         final long eventPositionInStream = 7686;
         final long latestKnowPositionInStream = 1000000;
 
@@ -170,13 +170,13 @@ public class SubscriptionEventProcessorTest {
         when(newStreamStatusRepository.lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream)).thenReturn(streamPositions);
         when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
-        when(interceptorChainProcessorProducer.produceLocalProcessor(componentName)).thenReturn(interceptorChainProcessor);
+        when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
         when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
 
-        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName), is(true));
+        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component), is(true));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
@@ -188,23 +188,23 @@ public class SubscriptionEventProcessorTest {
                 transactionHandler,
                 micrometerMetricsCounters);
 
-        micrometerMetricsCounters.incrementEventsProcessedCount();
+        micrometerMetricsCounters.incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream);
         inOrder.verify(interceptorChainProcessor).process(interceptorContext);
-        inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, componentName, eventPositionInStream);
-        inOrder.verify(newEventBufferRepository).remove(streamId, source, componentName, eventPositionInStream);
-        inOrder.verify(streamErrorRepository).markStreamAsFixed(streamId, source, componentName);
-        inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount();
+        inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, component, eventPositionInStream);
+        inOrder.verify(newEventBufferRepository).remove(streamId, source, component, eventPositionInStream);
+        inOrder.verify(streamErrorRepository).markStreamAsFixed(streamId, source, component);
+        inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount(source, component);
         inOrder.verify(transactionHandler).commit(userTransaction);
 
         verify(transactionHandler, never()).rollback(userTransaction);
-        verify(newStreamStatusRepository, never()).setUpToDate(true, streamId, source, componentName);
-        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount();
+        verify(newStreamStatusRepository, never()).setUpToDate(true, streamId, source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount(source, component);
     }
 
     @Test
@@ -214,7 +214,7 @@ public class SubscriptionEventProcessorTest {
         final UUID streamId = randomUUID();
         final String eventName = "some-event-name";
         final String source = "some-source";
-        final String componentName = "some-component-name";
+        final String component = "some-component-name";
         final long eventPositionInStream = 7686;
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
@@ -232,13 +232,13 @@ public class SubscriptionEventProcessorTest {
         when(newStreamStatusRepository.lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream)).thenReturn(streamPositions);
         when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
-        when(interceptorChainProcessorProducer.produceLocalProcessor(componentName)).thenReturn(interceptorChainProcessor);
+        when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
         when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
 
-        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName), is(true));
+        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component), is(true));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
@@ -250,22 +250,22 @@ public class SubscriptionEventProcessorTest {
                 transactionHandler,
                 micrometerMetricsCounters);
 
-        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream);
         inOrder.verify(interceptorChainProcessor).process(interceptorContext);
-        inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, componentName, eventPositionInStream);
-        inOrder.verify(newEventBufferRepository).remove(streamId, source, componentName, eventPositionInStream);
-        inOrder.verify(streamErrorRepository).markStreamAsFixed(streamId, source, componentName);
-        inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount();
+        inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, component, eventPositionInStream);
+        inOrder.verify(newEventBufferRepository).remove(streamId, source, component, eventPositionInStream);
+        inOrder.verify(streamErrorRepository).markStreamAsFixed(streamId, source, component);
+        inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount(source, component);
         inOrder.verify(transactionHandler).commit(userTransaction);
 
         verify(transactionHandler, never()).rollback(userTransaction);
-        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount(source, component);
     }
 
     @Test
@@ -275,7 +275,7 @@ public class SubscriptionEventProcessorTest {
         final UUID streamId = randomUUID();
         final String eventName = "some-event-name";
         final String source = "some-source";
-        final String componentName = "some-component-name";
+        final String component = "some-component";
         final long eventPositionInStream = 7686;
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
@@ -293,11 +293,11 @@ public class SubscriptionEventProcessorTest {
         when(newStreamStatusRepository.lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream)).thenReturn(streamPositions);
         when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_OUT_OF_ORDER);
 
-        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName), is(false));
+        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component), is(false));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
@@ -309,22 +309,22 @@ public class SubscriptionEventProcessorTest {
                 transactionHandler,
                 micrometerMetricsCounters);
 
-        micrometerMetricsCounters.incrementEventsProcessedCount();
+        micrometerMetricsCounters.incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream);
         inOrder.verify(transactionHandler).commit(userTransaction);
 
         verify(interceptorChainProcessor, never()).process(interceptorContext);
-        verify(newStreamStatusRepository, never()).updateCurrentPosition(streamId, source, componentName, eventPositionInStream);
-        verify(newEventBufferRepository, never()).remove(streamId, source, componentName, eventPositionInStream);
-        verify(streamErrorRepository, never()).markStreamAsFixed(streamId, source, componentName);
-        verify(newStreamStatusRepository, never()).setUpToDate(true, streamId, source, componentName);
+        verify(newStreamStatusRepository, never()).updateCurrentPosition(streamId, source, component, eventPositionInStream);
+        verify(newEventBufferRepository, never()).remove(streamId, source, component, eventPositionInStream);
+        verify(streamErrorRepository, never()).markStreamAsFixed(streamId, source, component);
+        verify(newStreamStatusRepository, never()).setUpToDate(true, streamId, source, component);
         verify(transactionHandler, never()).rollback(userTransaction);
-        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
     }
 
     @Test
@@ -334,7 +334,7 @@ public class SubscriptionEventProcessorTest {
         final UUID streamId = randomUUID();
         final String eventName = "some-event-name";
         final String source = "some-source";
-        final String componentName = "some-component-name";
+        final String component = "some-component";
         final long eventPositionInStream = 7686;
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
@@ -352,11 +352,11 @@ public class SubscriptionEventProcessorTest {
         when(newStreamStatusRepository.lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream)).thenReturn(streamPositions);
         when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_ALREADY_PROCESSED);
 
-        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName), is(false));
+        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component), is(false));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
@@ -368,24 +368,24 @@ public class SubscriptionEventProcessorTest {
                 transactionHandler,
                 micrometerMetricsCounters);
 
-        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream);
-        inOrder.verify(micrometerMetricsCounters).incrementEventsIgnoredCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsIgnoredCount(source, component);
         inOrder.verify(transactionHandler).commit(userTransaction);
 
         verify(interceptorChainProcessor, never()).process(interceptorContext);
-        verify(newStreamStatusRepository, never()).updateCurrentPosition(streamId, source, componentName, eventPositionInStream);
-        verify(newEventBufferRepository, never()).remove(streamId, source, componentName, eventPositionInStream);
-        verify(streamErrorRepository, never()).markStreamAsFixed(streamId, source, componentName);
-        verify(newStreamStatusRepository, never()).setUpToDate(true, streamId, source, componentName);
+        verify(newStreamStatusRepository, never()).updateCurrentPosition(streamId, source, component, eventPositionInStream);
+        verify(newEventBufferRepository, never()).remove(streamId, source, component, eventPositionInStream);
+        verify(streamErrorRepository, never()).markStreamAsFixed(streamId, source, component);
+        verify(newStreamStatusRepository, never()).setUpToDate(true, streamId, source, component);
         verify(transactionHandler, never()).rollback(userTransaction);
-        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
     }
 
     @Test
@@ -395,9 +395,9 @@ public class SubscriptionEventProcessorTest {
 
         final UUID eventId = fromString("ba0c36e1-659e-430c-9d33-67eda5ca70cd");
         final UUID streamId = fromString("4f4815fa-825d-4869-a37f-e443dea21d18");
-        final String componentName = "some-component-name";
-        final String eventName = "some-event-name";
         final String source = "some-source";
+        final String component = "some-component";
+        final String eventName = "some-event-name";
         final long eventPositionInStream = 876;
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
@@ -415,16 +415,16 @@ public class SubscriptionEventProcessorTest {
         when(newStreamStatusRepository.lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream)).thenReturn(streamPositions);
         when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
-        when(interceptorChainProcessorProducer.produceLocalProcessor(componentName)).thenReturn(interceptorChainProcessor);
+        when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
         when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
         doThrow(nullPointerException).when(interceptorChainProcessor).process(interceptorContext);
 
         final StreamProcessingException streamProcessingException = assertThrows(
                 StreamProcessingException.class,
-                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName));
+                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component));
 
         assertThat(streamProcessingException.getCause(), is(nullPointerException));
         assertThat(streamProcessingException.getMessage(), is("Failed to process event. name: 'some-event-name', eventId: 'ba0c36e1-659e-430c-9d33-67eda5ca70cd', streamId: '4f4815fa-825d-4869-a37f-e443dea21d18'"));
@@ -439,22 +439,22 @@ public class SubscriptionEventProcessorTest {
                 streamErrorStatusHandler,
                 micrometerMetricsCounters);
 
-        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
         inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream);
         inOrder.verify(interceptorChainProcessor).process(interceptorContext);
         inOrder.verify(transactionHandler).rollback(userTransaction);
-        inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, componentName);
+        inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, source, component);
 
-        verify(newStreamStatusRepository, never()).updateCurrentPosition(streamId, source, componentName, eventPositionInStream);
-        verify(newEventBufferRepository, never()).remove(streamId, source, componentName, eventPositionInStream);
+        verify(newStreamStatusRepository, never()).updateCurrentPosition(streamId, source, component, eventPositionInStream);
+        verify(newEventBufferRepository, never()).remove(streamId, source, component, eventPositionInStream);
         verify(transactionHandler, never()).commit(userTransaction);
-        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount(source, component);
     }
 
     @Test
@@ -464,9 +464,9 @@ public class SubscriptionEventProcessorTest {
 
         final UUID eventId = fromString("ba0c36e1-659e-430c-9d33-67eda5ca70cd");
         final UUID streamId = fromString("4f4815fa-825d-4869-a37f-e443dea21d18");
-        final String componentName = "some-component-name";
-        final String eventName = "some-event-name";
         final String source = "some-source";
+        final String component = "some-component";
+        final String eventName = "some-event-name";
         final long eventPositionInStream = 876;
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
@@ -481,23 +481,23 @@ public class SubscriptionEventProcessorTest {
         doThrow(nullPointerException).when(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream);
 
         assertThrows(StreamProcessingException.class,
-                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName));
+                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
                 streamErrorStatusHandler,
                 micrometerMetricsCounters);
 
-        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).rollback(userTransaction);
-        inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, componentName);
+        inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, source, component);
 
-        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount(source, component);
         verifyNoInteractions(eventProcessingStatusCalculator, interceptorChainProcessorProducer, newEventBufferRepository);
     }
 
@@ -508,9 +508,9 @@ public class SubscriptionEventProcessorTest {
 
         final UUID eventId = fromString("ba0c36e1-659e-430c-9d33-67eda5ca70cd");
         final UUID streamId = fromString("4f4815fa-825d-4869-a37f-e443dea21d18");
-        final String componentName = "some-component-name";
-        final String eventName = "some-event-name";
         final String source = "some-source";
+        final String component = "some-component";
+        final String eventName = "some-event-name";
         final long eventPositionInStream = 876;
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
@@ -526,24 +526,24 @@ public class SubscriptionEventProcessorTest {
         when(newStreamStatusRepository.lockRowAndGetPositions(
                 streamId,
                 source,
-                componentName,
+                component,
                 eventPositionInStream)).thenReturn(streamPositions);
         doThrow(nullPointerException).when(eventProcessingStatusCalculator).calculateEventOrderingStatus(streamPositions);
 
         assertThrows(StreamProcessingException.class,
-                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName));
+                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
                 streamErrorStatusHandler,
                 micrometerMetricsCounters);
 
-        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount();
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).rollback(userTransaction);
-        inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, componentName);
+        inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, source, component);
 
-        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount(source, component);
         verifyNoInteractions(interceptorChainProcessorProducer, newEventBufferRepository);
     }
 
@@ -554,7 +554,7 @@ public class SubscriptionEventProcessorTest {
         final UUID streamId = randomUUID();
         final String eventName = "some-event-name";
         final String source = "some-source";
-        final String componentName = "some-component-name";
+        final String component = "some-component";
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
@@ -568,13 +568,13 @@ public class SubscriptionEventProcessorTest {
 
         final MissingPositionInStreamException missingPositionInStreamException = assertThrows(
                 MissingPositionInStreamException.class,
-                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName));
+                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component));
 
         assertThat(missingPositionInStreamException.getMessage(), is("No position found in event: name 'some-event-name', eventId 'b82b226a-3d8e-4fad-b456-5e747697f46d'"));
 
-        verify(micrometerMetricsCounters).incrementEventsProcessedCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsProcessedCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount(source, component);
         verifyNoInteractions(transactionHandler);
         verifyNoInteractions(newStreamStatusRepository);
         verifyNoInteractions(newEventBufferRepository);
@@ -588,7 +588,8 @@ public class SubscriptionEventProcessorTest {
         final UUID eventId = fromString("b82b226a-3d8e-4fad-b456-5e747697f46d");
         final UUID streamId = randomUUID();
         final String eventName = "some-event-name";
-        final String componentName = "some-component-name";
+        final String source = "some-source";
+        final String component = "some-component";
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
@@ -601,7 +602,7 @@ public class SubscriptionEventProcessorTest {
 
         final MissingSourceException missingSourceException = assertThrows(
                 MissingSourceException.class,
-                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName));
+                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component));
 
         assertThat(missingSourceException.getMessage(), is("No source found in event: name 'some-event-name', eventId 'b82b226a-3d8e-4fad-b456-5e747697f46d'"));
 
@@ -610,9 +611,9 @@ public class SubscriptionEventProcessorTest {
         verifyNoInteractions(newEventBufferRepository);
         verifyNoInteractions(newEventBufferRepository);
         verifyNoInteractions(streamErrorStatusHandler);
-        verify(micrometerMetricsCounters).incrementEventsProcessedCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsProcessedCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount(source, component);
     }
 
     @Test
@@ -620,7 +621,8 @@ public class SubscriptionEventProcessorTest {
 
         final UUID eventId = fromString("b82b226a-3d8e-4fad-b456-5e747697f46d");
         final String eventName = "some-event-name";
-        final String componentName = "some-component-name";
+        final String source = "some-source";
+        final String component = "some-component";
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
@@ -632,7 +634,7 @@ public class SubscriptionEventProcessorTest {
 
         final MissingStreamIdException missingStreamIdException = assertThrows(
                 MissingStreamIdException.class,
-                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, componentName));
+                () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component));
 
         assertThat(missingStreamIdException.getMessage(), is("No streamId found in event: name 'some-event-name', eventId 'b82b226a-3d8e-4fad-b456-5e747697f46d'"));
 
@@ -641,8 +643,8 @@ public class SubscriptionEventProcessorTest {
         verifyNoInteractions(newEventBufferRepository);
         verifyNoInteractions(newEventBufferRepository);
         verifyNoInteractions(streamErrorStatusHandler);
-        verify(micrometerMetricsCounters).incrementEventsProcessedCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount();
-        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount();
+        verify(micrometerMetricsCounters, never()).incrementEventsProcessedCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
+        verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount(source, component);
     }
 }
