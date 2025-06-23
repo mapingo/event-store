@@ -33,12 +33,12 @@ public class StreamErrorStatusHandler {
     @Inject
     private Logger logger;
 
-    public void onStreamProcessingFailure(final JsonEnvelope jsonEnvelope, final Throwable exception, final String componentName) {
+    public void onStreamProcessingFailure(final JsonEnvelope jsonEnvelope, final Throwable exception, final String source, final String component) {
 
-        micrometerMetricsCounters.incrementEventsFailedCount();
+        micrometerMetricsCounters.incrementEventsFailedCount(source, component);
 
         final ExceptionDetails exceptionDetails = exceptionDetailsRetriever.getExceptionDetailsFrom(exception);
-        final StreamError streamError = streamErrorConverter.asStreamError(exceptionDetails, jsonEnvelope, componentName);
+        final StreamError streamError = streamErrorConverter.asStreamError(exceptionDetails, jsonEnvelope, component);
         try {
             transactionHandler.begin(userTransaction);
             streamErrorRepository.markStreamAsErrored(streamError);

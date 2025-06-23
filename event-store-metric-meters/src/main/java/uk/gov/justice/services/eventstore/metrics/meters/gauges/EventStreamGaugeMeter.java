@@ -1,14 +1,9 @@
 package uk.gov.justice.services.eventstore.metrics.meters.gauges;
 
-import static uk.gov.justice.services.eventstore.metrics.tags.TagNames.COMPONENT_TAG_NAME;
-import static uk.gov.justice.services.eventstore.metrics.tags.TagNames.SOURCE_TAG_NAME;
-
-import io.micrometer.core.instrument.Tag;
 import uk.gov.justice.services.event.buffer.core.repository.metrics.StreamMetrics;
 import uk.gov.justice.services.eventstore.metrics.tags.TagProvider.SourceComponentPair;
 import uk.gov.justice.services.metrics.micrometer.meters.GaugeMetricsMeter;
 
-import java.util.List;
 import java.util.function.Function;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -50,12 +45,6 @@ public class EventStreamGaugeMeter implements GaugeMetricsMeter {
     @Override
     public String metricDescription() {
         return metricDescription;
-    }
-
-    @Override
-    public List<Tag> metricTags() {
-        return List.of(Tag.of(SOURCE_TAG_NAME.getTagName(), sourceComponentPair.source()), 
-                       Tag.of(COMPONENT_TAG_NAME.getTagName(), sourceComponentPair.component()));
     }
 
     @VisibleForTesting

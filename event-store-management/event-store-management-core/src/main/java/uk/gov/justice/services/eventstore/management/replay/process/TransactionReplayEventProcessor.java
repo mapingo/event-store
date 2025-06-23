@@ -20,9 +20,10 @@ public class TransactionReplayEventProcessor {
 
 
     @Transactional(REQUIRES_NEW)
-    public void process(final String componentName, final JsonEnvelope eventEnvelope) {
-        micrometerMetricsCounters.incrementEventsReceivedCount();
-        final SubscriptionManager subscriptionManager = subscriptionManagerSelector.selectFor(componentName);
+    public void process(final String source, final String component, final JsonEnvelope eventEnvelope) {
+
+        micrometerMetricsCounters.incrementEventsReceivedCount(source, component);
+        final SubscriptionManager subscriptionManager = subscriptionManagerSelector.selectFor(component);
         subscriptionManager.process(eventEnvelope);
     }
 }

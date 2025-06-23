@@ -35,12 +35,12 @@ public class ReplayEventToEventListenerProcessorBean {
 
     @Transactional(NEVER)
     public void perform(final ReplayEventContext replayEventContext) {
-        final String eventSourceName = replayEventContext.getEventSourceName();
         final UUID eventId = replayEventContext.getCommandRuntimeId();
-        final String componentName = replayEventContext.getComponentName();
+        final String source = replayEventContext.getEventSourceName();
+        final String component = replayEventContext.getComponentName();
 
-        final PublishedEvent publishedEvent = fetchPublishedEvent(eventSourceName, eventId);
-        process(componentName, publishedEvent);
+        final PublishedEvent publishedEvent = fetchPublishedEvent(source, eventId);
+        process(source, component, publishedEvent);
     }
 
     private PublishedEvent fetchPublishedEvent(final String eventSourceName, final UUID eventId) {
@@ -50,8 +50,8 @@ public class ReplayEventToEventListenerProcessorBean {
                 .orElseThrow(() -> new ReplayEventFailedException("Published event not found for given commandRuntimeId:" + eventId + " under event source name:" + eventSourceName));
     }
 
-    private void process(final String componentName, final PublishedEvent publishedEvent) {
+    private void process(final String source, final String component, final PublishedEvent publishedEvent) {
         final JsonEnvelope eventEnvelope = eventConverter.envelopeOf(publishedEvent);
-        transactionReplayEventProcessor.process(componentName, eventEnvelope);
+        transactionReplayEventProcessor.process(source, component, eventEnvelope);
     }
 }

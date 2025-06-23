@@ -52,7 +52,7 @@ public class StreamStatusService {
     private Logger logger;
 
     @Transactional(NOT_SUPPORTED)
-    public EventOrderingStatus handleStreamStatusUpdates(final JsonEnvelope incomingJsonEnvelope, final String componentName) {
+    public EventOrderingStatus handleStreamStatusUpdates(final JsonEnvelope incomingJsonEnvelope, final String component) {
 
         final Metadata metadata = incomingJsonEnvelope.metadata();
         final String name = metadata.name();
@@ -67,29 +67,29 @@ public class StreamStatusService {
             newStreamStatusRepository.insertIfNotExists(
                     streamId,
                     source,
-                    componentName,
+                    component,
                     clock.now(),
                     false);
 
             final StreamPositions streamPositions = newStreamStatusRepository.lockRowAndGetPositions(
                     streamId,
                     source,
-                    componentName,
+                    component,
                     incomingPositionInStream);
 
             latestKnownPositionAndIsUpToDateUpdater.updateIfNecessary(
                     streamPositions,
                     streamId,
                     source,
-                    componentName);
+                    component);
 
             final EventOrderingStatus eventOrderingStatus = eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions);
 
             switch (eventOrderingStatus) {
                 case EVENT_OUT_OF_ORDER ->
-                        newEventBufferManager.addToBuffer(incomingJsonEnvelope, componentName);
+                        newEventBufferManager.addToBuffer(incomingJsonEnvelope, component);
                 case EVENT_ALREADY_PROCESSED -> {
-                    micrometerMetricsCounters.incrementEventsIgnoredCount();
+                    micrometerMetricsCounters.incrementEventsIgnoredCount(source, component);
                     logger.info(format("Duplicate incoming event detected. Event already processed; ignoring. eventId: '%s', streamId: '%s', incomingEventPositionInStream '%d' currentStreamPosition: '%d'",
                             eventId,
                             streamId,

@@ -1,6 +1,5 @@
 package uk.gov.justice.services.eventstore.metrics.meters.gauges;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -12,7 +11,6 @@ import static uk.gov.justice.services.metrics.micrometer.meters.MetricsMeterName
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.getValueOfField;
 
 import uk.gov.justice.services.eventstore.metrics.tags.TagProvider.SourceComponentPair;
-import uk.gov.justice.services.metrics.micrometer.meters.GaugeMetricsMeter;
 
 import java.util.List;
 

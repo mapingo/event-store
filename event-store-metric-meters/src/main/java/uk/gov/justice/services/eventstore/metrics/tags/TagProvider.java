@@ -1,8 +1,8 @@
 package uk.gov.justice.services.eventstore.metrics.tags;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.eventstore.metrics.tags.TagNames.ENV_TAG_NAME;
-import static uk.gov.justice.services.eventstore.metrics.tags.TagNames.SERVICE_TAG_NAME;
+import static uk.gov.justice.services.metrics.micrometer.config.TagNames.ENV_TAG_NAME;
+import static uk.gov.justice.services.metrics.micrometer.config.TagNames.SERVICE_TAG_NAME;
 
 import uk.gov.justice.services.jdbc.persistence.JndiAppNameProvider;
 import uk.gov.justice.services.metrics.micrometer.config.MetricsConfiguration;
