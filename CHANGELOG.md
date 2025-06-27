@@ -5,9 +5,10 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### [Unreleased]
 
-# [17.103.0-M19] - 2025-06-27
+# [17.103.0-M20] - 2025-06-27
 ### Changed
 - Refactor NewSubscriptionManager to use EventSourceNameCalculator while calculating source
+- Fixed MeterNotFoundException thrown when looking up metrics meter with unknown tags
 
 # [17.103.0-M18] - 2025-06-24
 ### Changed
