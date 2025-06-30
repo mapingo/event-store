@@ -87,7 +87,7 @@ public class StreamErrorRepositoryIT {
         streamErrorRepository.markStreamAsErrored(streamError);
 
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-            final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findBy(streamError.streamErrorDetails().id(), connection);
+            final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findByErrorId(streamError.streamErrorDetails().id(), connection);
             assertThat(streamErrorOptional, is(of(streamError)));
         }
 
@@ -130,7 +130,7 @@ public class StreamErrorRepositoryIT {
         streamErrorRepository.markStreamAsErrored(streamError);
 
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-            final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findBy(streamError.streamErrorDetails().id(), connection);
+            final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findByErrorId(streamError.streamErrorDetails().id(), connection);
             assertThat(streamErrorOptional, is(of(streamError)));
         }
 

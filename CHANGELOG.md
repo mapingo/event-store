@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+### Added
+- New json endpoint to show errors from the stream_error tables
 
 # [17.103.0-M21] - 2025-06-30
 ### Changed

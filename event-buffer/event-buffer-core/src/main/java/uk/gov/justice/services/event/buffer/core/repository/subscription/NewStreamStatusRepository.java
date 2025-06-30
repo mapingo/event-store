@@ -1,5 +1,12 @@
 package uk.gov.justice.services.event.buffer.core.repository.subscription;
 
+import static java.lang.String.format;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
+
+import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,13 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
-import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 
-import static java.lang.String.format;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
+import javax.inject.Inject;
 
 @SuppressWarnings("java:S1192")
 public class NewStreamStatusRepository {

@@ -6,9 +6,10 @@ import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.mana
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
 
-import javax.inject.Inject;
 import java.util.Queue;
 import java.util.UUID;
+
+import javax.inject.Inject;
 
 public class EventQueueConsumer {
 

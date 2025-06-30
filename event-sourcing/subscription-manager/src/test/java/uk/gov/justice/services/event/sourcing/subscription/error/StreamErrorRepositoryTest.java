@@ -1,7 +1,9 @@
 package uk.gov.justice.services.event.sourcing.subscription.error;
 
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.inOrder;
@@ -19,6 +21,8 @@ import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.sql.DataSource;
@@ -165,5 +169,123 @@ public class StreamErrorRepositoryTest {
 
         assertThat(streamErrorHandlingException.getCause(), is(sqlException));
         assertThat(streamErrorHandlingException.getMessage(), is("Failed to get connection to view-store"));
+    }
+
+    @Test
+    public void shouldFindAllByStreamId() throws Exception {
+
+        final UUID streamId = randomUUID();
+        final DataSource viewStoreDataSource = mock(DataSource.class);
+        final Connection connection = mock(Connection.class);
+        final StreamError streamError_1 = mock(StreamError.class);
+        final StreamError streamError_2 = mock(StreamError.class);
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
+        when(viewStoreDataSource.getConnection()).thenReturn(connection);
+        when(streamErrorPersistence.findAllByStreamId(streamId, connection)).thenReturn(List.of(streamError_1, streamError_2));
+
+        final List<StreamError> streamErrors = streamErrorRepository.findAllByStreamId(streamId);
+
+        assertThat(streamErrors.size(), is(2));
+        assertThat(streamErrors.get(0), is(streamError_1));
+        assertThat(streamErrors.get(1), is(streamError_2));
+
+        verify(connection).close();
+    }
+
+    @Test
+    public void shouldThrowStreamErrorHandlingExceptionIfFindAllByStreamIdFails() throws Exception {
+
+        final UUID streamId = randomUUID();
+        final DataSource viewStoreDataSource = mock(DataSource.class);
+        final SQLException sqlException = new SQLException("Ooops");
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
+        when(viewStoreDataSource.getConnection()).thenThrow(sqlException);
+
+        final StreamErrorHandlingException streamErrorHandlingException = assertThrows(
+                StreamErrorHandlingException.class,
+                () -> streamErrorRepository.findAllByStreamId(streamId));
+
+        assertThat(streamErrorHandlingException.getCause(), is(sqlException));
+        assertThat(streamErrorHandlingException.getMessage(), is("Failed to get connection to view-store"));
+    }
+
+    @Test
+    public void shouldCloseConnectionOnErrorWhenFindingByStreamId() throws Exception {
+
+        final UUID streamId = randomUUID();
+        final DataSource viewStoreDataSource = mock(DataSource.class);
+        final Connection connection = mock(Connection.class);
+        final StreamErrorHandlingException streamErrorHandlingException = new StreamErrorHandlingException("Ooops");
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
+        when(viewStoreDataSource.getConnection()).thenReturn(connection);
+        when(streamErrorPersistence.findAllByStreamId(streamId, connection)).thenThrow(streamErrorHandlingException);
+
+        final StreamErrorHandlingException thrownStreamErrorHandlingException = assertThrows(
+                StreamErrorHandlingException.class,
+                () -> streamErrorRepository.findAllByStreamId(streamId));
+
+        assertThat(thrownStreamErrorHandlingException, is(sameInstance(streamErrorHandlingException)));
+
+        verify(connection).close();
+    }
+
+    @Test
+    public void shouldFindByErrorId() throws Exception {
+
+        final UUID errorId = randomUUID();
+        final DataSource viewStoreDataSource = mock(DataSource.class);
+        final Connection connection = mock(Connection.class);
+        final Optional<StreamError> streamError = of(mock(StreamError.class));
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
+        when(viewStoreDataSource.getConnection()).thenReturn(connection);
+        when(streamErrorPersistence.findByErrorId(errorId, connection)).thenReturn(streamError);
+
+        assertThat(streamErrorRepository.findByErrorId(errorId), is(streamError));
+
+        verify(connection).close();
+    }
+
+    @Test
+    public void shouldThrowStreamErrorHandlingExceptionIfFindByErrorIdFails() throws Exception {
+
+        final UUID errorId = randomUUID();
+        final DataSource viewStoreDataSource = mock(DataSource.class);
+        final SQLException sqlException = new SQLException("Ooops");
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
+        when(viewStoreDataSource.getConnection()).thenThrow(sqlException);
+
+        final StreamErrorHandlingException streamErrorHandlingException = assertThrows(
+                StreamErrorHandlingException.class,
+                () -> streamErrorRepository.findByErrorId(errorId));
+
+        assertThat(streamErrorHandlingException.getCause(), is(sqlException));
+        assertThat(streamErrorHandlingException.getMessage(), is("Failed to get connection to view-store"));
+    }
+
+    @Test
+    public void shouldCloseConnectionIfFindByErrorIdFails() throws Exception {
+
+        final UUID errorId = randomUUID();
+        final DataSource viewStoreDataSource = mock(DataSource.class);
+        final Connection connection = mock(Connection.class);
+        final Optional<StreamError> streamError = of(mock(StreamError.class));
+        final StreamErrorHandlingException streamErrorHandlingException = new StreamErrorHandlingException("Ooops");
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
+        when(viewStoreDataSource.getConnection()).thenReturn(connection);
+        when(streamErrorPersistence.findByErrorId(errorId, connection)).thenThrow(streamErrorHandlingException);
+
+        final StreamErrorHandlingException thrownStreamErrorHandlingException = assertThrows(
+                StreamErrorHandlingException.class,
+                () -> streamErrorRepository.findByErrorId(errorId));
+
+        assertThat(thrownStreamErrorHandlingException, is(sameInstance(streamErrorHandlingException)));
+
+        verify(connection).close();
     }
 }

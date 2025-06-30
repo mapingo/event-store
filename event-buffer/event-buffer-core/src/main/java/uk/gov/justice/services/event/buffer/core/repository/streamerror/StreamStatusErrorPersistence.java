@@ -133,6 +133,4 @@ public class StreamStatusErrorPersistence {
             throw new StreamErrorHandlingException(format("Failed to lock row in stream_status table: streamId '%s', source '%s', component '%s'", streamId, source, component), e);
         }
     }
-
-
 }

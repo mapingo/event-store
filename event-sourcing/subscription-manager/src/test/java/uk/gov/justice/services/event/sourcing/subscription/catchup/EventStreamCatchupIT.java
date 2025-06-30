@@ -1,13 +1,10 @@
 package uk.gov.justice.services.event.sourcing.subscription.catchup;
 
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.openejb.jee.WebApp;
-import org.apache.openejb.junit5.RunWithApplicationComposer;
-import org.apache.openejb.testing.Application;
-import org.apache.openejb.testing.Classes;
-import org.apache.openejb.testing.Configuration;
-import org.apache.openejb.testing.Module;
-import org.junit.jupiter.api.Test;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.fail;
+import static uk.gov.justice.services.core.postgres.OpenEjbConfigurationBuilder.createOpenEjbConfigurationBuilder;
+
 import uk.gov.justice.services.cdi.LoggerProducer;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.DummyEventQueueProcessingConfig;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.ConcurrentEventStreamConsumerManager;
@@ -23,15 +20,20 @@ import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.util
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
 
-import javax.inject.Inject;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Queue;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static org.junit.jupiter.api.Assertions.fail;
-import static uk.gov.justice.services.core.postgres.OpenEjbConfigurationBuilder.createOpenEjbConfigurationBuilder;
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.openejb.jee.WebApp;
+import org.apache.openejb.junit5.RunWithApplicationComposer;
+import org.apache.openejb.testing.Application;
+import org.apache.openejb.testing.Classes;
+import org.apache.openejb.testing.Configuration;
+import org.apache.openejb.testing.Module;
+import org.junit.jupiter.api.Test;
 
 @RunWithApplicationComposer
 public class EventStreamCatchupIT {
