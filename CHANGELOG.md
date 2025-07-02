@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+
+# [17.103.0-M22] - 2025-07-02
 ### Added
 - New REST endpoint to fetch stream errors by streamId and errorId
 
