@@ -6,6 +6,8 @@ import static java.util.Optional.of;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,10 +32,9 @@ public class StreamErrorPersistence {
         }
     }
 
-    public Optional<StreamError> findBy(final UUID streamErrorId, final Connection connection) {
+    public Optional<StreamError> findByErrorId(final UUID streamErrorId, final Connection connection) {
         try  {
-
-            final Optional<StreamErrorDetails> streamErrorDetailsOptional = streamErrorDetailsPersistence.findBy(streamErrorId, connection);
+            final Optional<StreamErrorDetails> streamErrorDetailsOptional = streamErrorDetailsPersistence.findById(streamErrorId, connection);
 
             if (streamErrorDetailsOptional.isPresent()) {
                 final StreamErrorDetails streamErrorDetails = streamErrorDetailsOptional.get();
@@ -48,6 +49,26 @@ public class StreamErrorPersistence {
 
         } catch (final SQLException e) {
             throw new StreamErrorHandlingException(format("Failed find StreamError by streamErrorId: '%s'", streamErrorId), e);
+        }
+    }
+
+    public List<StreamError> findAllByStreamId(final UUID streamId, final Connection connection) {
+        try  {
+            final List<StreamError> streamErrors = new ArrayList<>();
+            final List<StreamErrorDetails> streamErrorDetailsList = streamErrorDetailsPersistence.findByStreamId(streamId, connection);
+            for(final StreamErrorDetails streamErrorDetails: streamErrorDetailsList) {
+                final Optional<StreamErrorHash> streamErrorHashOptional = streamErrorHashPersistence.findByHash(streamErrorDetails.hash(), connection);
+                if (streamErrorHashOptional.isPresent()) {
+                    streamErrors.add(new StreamError(streamErrorDetails, streamErrorHashOptional.get()));
+                } else {
+                    throw new StreamErrorHandlingException("No stream_error found for hash '" + streamErrorDetails.hash() + "' yet hash exists in stream_error table");
+                }
+            }
+
+            return streamErrors;
+
+        } catch (final SQLException e) {
+            throw new StreamErrorHandlingException(format("Failed find List of StreamErrors by streamId: '%s'", streamId), e);
         }
     }
 

@@ -1,5 +1,9 @@
 package uk.gov.justice.services.event.sourcing.subscription.catchup;
 
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Queue;
+import javax.inject.Inject;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.openejb.jee.WebApp;
 import org.apache.openejb.junit5.RunWithApplicationComposer;
@@ -22,11 +26,6 @@ import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.util
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.util.TestCatchupBean;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
-
-import javax.inject.Inject;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Queue;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;

@@ -1,23 +1,10 @@
 package uk.gov.justice.services.event.buffer.core.repository.streamerror;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
-import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
-import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
-
 import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import javax.sql.DataSource;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +12,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
+import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
+import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
+
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 @ExtendWith(MockitoExtension.class)
 public class StreamErrorPersistenceIT {
@@ -33,21 +31,25 @@ public class StreamErrorPersistenceIT {
     private ViewStoreJdbcDataSourceProvider viewStoreDataSourceProvider;
 
     @Spy
-    private StreamErrorHashPersistence streamErrorHashPersistence = new StreamErrorHashPersistence();
-
+    private StreamErrorHashRowMapper streamErrorHashRowMapper;
+    @InjectMocks
+    private StreamErrorHashPersistence streamErrorHashPersistence;
     @Spy
-    private StreamErrorDetailsPersistence streamErrorDetailsPersistence = new StreamErrorDetailsPersistence();
+    private StreamErrorDetailsRowMapper streamErrorDetailsRowMapper;
+    @InjectMocks
+    private StreamErrorDetailsPersistence streamErrorDetailsPersistence;
+    @Spy
+    private StreamErrorPersistence streamErrorPersistence;
 
     private final DataSource viewStoreDataSource = new TestJdbcDataSourceProvider().getViewStoreDataSource("framework");
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
 
     @BeforeEach
     public void cleanTables() {
+        setField(streamErrorPersistence, "streamErrorHashPersistence", streamErrorHashPersistence);
+        setField(streamErrorPersistence, "streamErrorDetailsPersistence", streamErrorDetailsPersistence);
         databaseCleaner.cleanViewStoreTables("framework", "stream_error_hash", "stream_error");
     }
-
-    @InjectMocks
-    private StreamErrorPersistence streamErrorPersistence;
 
     @Test
     public void shouldSaveAndRemoveErrorsCorrectly() throws Exception {

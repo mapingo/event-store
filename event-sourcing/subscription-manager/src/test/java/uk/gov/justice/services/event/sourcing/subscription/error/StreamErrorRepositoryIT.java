@@ -1,5 +1,33 @@
 package uk.gov.justice.services.event.sourcing.subscription.error;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.UUID;
+import javax.sql.DataSource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamError;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetails;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetailsPersistence;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetailsRowMapper;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHash;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHashPersistence;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHashRowMapper;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorPersistence;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamStatusErrorPersistence;
+import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
+import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
+import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
+
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
@@ -10,48 +38,23 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamError;
-import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetails;
-import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetailsPersistence;
-import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHash;
-import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHashPersistence;
-import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorPersistence;
-import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamStatusErrorPersistence;
-import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
-import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
-import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.sql.DataSource;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 @ExtendWith(MockitoExtension.class)
 public class StreamErrorRepositoryIT {
 
     private final DataSource viewStoreDataSource = new TestJdbcDataSourceProvider().getViewStoreDataSource("framework");
 
     @Spy
-    private StreamErrorHashPersistence streamErrorHashPersistence = new StreamErrorHashPersistence();
+    private StreamErrorHashRowMapper streamErrorHashRowMapper;
+    @InjectMocks
+    private StreamErrorHashPersistence streamErrorHashPersistence;
 
     @Spy
-    private StreamErrorDetailsPersistence streamErrorDetailsPersistence = new StreamErrorDetailsPersistence();
+    private StreamErrorDetailsRowMapper streamErrorDetailsRowMapper;
+    @InjectMocks
+    private StreamErrorDetailsPersistence streamErrorDetailsPersistence;
 
     @Spy
-    private StreamErrorPersistence streamErrorPersistence = new StreamErrorPersistence();
+    private StreamErrorPersistence streamErrorPersistence;
 
     @Mock
     private ViewStoreJdbcDataSourceProvider viewStoreJdbcDataSourceProvider = new ViewStoreJdbcDataSourceProvider();
@@ -69,8 +72,6 @@ public class StreamErrorRepositoryIT {
                 "stream_status",
                 "stream_buffer",
                 "stream_error");
-
-
         setField(streamErrorPersistence, "streamErrorHashPersistence", streamErrorHashPersistence);
         setField(streamErrorPersistence, "streamErrorDetailsPersistence", streamErrorDetailsPersistence);
         setField(streamStatusErrorPersistence, "clock", new UtcClock());
@@ -87,7 +88,7 @@ public class StreamErrorRepositoryIT {
         streamErrorRepository.markStreamAsErrored(streamError);
 
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-            final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findBy(streamError.streamErrorDetails().id(), connection);
+            final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findByErrorId(streamError.streamErrorDetails().id(), connection);
             assertThat(streamErrorOptional, is(of(streamError)));
         }
 
@@ -130,7 +131,7 @@ public class StreamErrorRepositoryIT {
         streamErrorRepository.markStreamAsErrored(streamError);
 
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-            final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findBy(streamError.streamErrorDetails().id(), connection);
+            final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findByErrorId(streamError.streamErrorDetails().id(), connection);
             assertThat(streamErrorOptional, is(of(streamError)));
         }
 

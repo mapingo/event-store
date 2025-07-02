@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -103,7 +104,7 @@ public class StreamErrorPersistenceTest {
     }
 
     @Test
-    public void shouldFindByStreamErrorId() throws Exception {
+    public void shouldFindByErrorIdStreamErrorId() throws Exception {
 
         final UUID streamErrorId = randomUUID();
         final String hash = "some-hash";
@@ -112,11 +113,11 @@ public class StreamErrorPersistenceTest {
         final StreamErrorDetails streamErrorDetails = mock(StreamErrorDetails.class);
         final StreamErrorHash streamErrorHash = mock(StreamErrorHash.class);
 
-        when(streamErrorDetailsPersistence.findBy(streamErrorId, connection)).thenReturn(of(streamErrorDetails));
+        when(streamErrorDetailsPersistence.findById(streamErrorId, connection)).thenReturn(of(streamErrorDetails));
         when(streamErrorDetails.hash()).thenReturn(hash);
         when(streamErrorHashPersistence.findByHash(streamErrorDetails.hash(), connection)).thenReturn(of(streamErrorHash));
 
-        final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findBy(streamErrorId, connection);
+        final Optional<StreamError> streamErrorOptional = streamErrorPersistence.findByErrorId(streamErrorId, connection);
 
         assertThat(streamErrorOptional.isPresent(), is(true));
         assertThat(streamErrorOptional.get().streamErrorDetails(), is(streamErrorDetails));
@@ -134,11 +135,11 @@ public class StreamErrorPersistenceTest {
         final Connection connection = mock(Connection.class);
         final StreamErrorDetails streamErrorDetails = mock(StreamErrorDetails.class);
 
-        when(streamErrorDetailsPersistence.findBy(streamErrorId, connection)).thenReturn(of(streamErrorDetails));
+        when(streamErrorDetailsPersistence.findById(streamErrorId, connection)).thenReturn(of(streamErrorDetails));
         when(streamErrorDetails.hash()).thenReturn(hash);
         when(streamErrorHashPersistence.findByHash(streamErrorDetails.hash(), connection)).thenReturn(empty());
 
-        assertThat(streamErrorPersistence.findBy(streamErrorId, connection), is(empty()));
+        assertThat(streamErrorPersistence.findByErrorId(streamErrorId, connection), is(empty()));
 
         verify(connection, never()).close();
     }
@@ -149,9 +150,9 @@ public class StreamErrorPersistenceTest {
         final UUID streamErrorId = randomUUID();
         final Connection connection = mock(Connection.class);
 
-        when(streamErrorDetailsPersistence.findBy(streamErrorId, connection)).thenReturn(empty());
+        when(streamErrorDetailsPersistence.findById(streamErrorId, connection)).thenReturn(empty());
 
-        assertThat(streamErrorPersistence.findBy(streamErrorId, connection), is(empty()));
+        assertThat(streamErrorPersistence.findByErrorId(streamErrorId, connection), is(empty()));
 
         verify(connection, never()).close();
     }
@@ -166,13 +167,13 @@ public class StreamErrorPersistenceTest {
         final Connection connection = mock(Connection.class);
         final StreamErrorDetails streamErrorDetails = mock(StreamErrorDetails.class);
 
-        when(streamErrorDetailsPersistence.findBy(streamErrorId, connection)).thenReturn(of(streamErrorDetails));
+        when(streamErrorDetailsPersistence.findById(streamErrorId, connection)).thenReturn(of(streamErrorDetails));
         when(streamErrorDetails.hash()).thenReturn(hash);
         when(streamErrorHashPersistence.findByHash(streamErrorDetails.hash(), connection)).thenThrow(sqlException);
 
         final StreamErrorHandlingException streamErrorHandlingException = assertThrows(
                 StreamErrorHandlingException.class,
-                () -> streamErrorPersistence.findBy(streamErrorId, connection));
+                () -> streamErrorPersistence.findByErrorId(streamErrorId, connection));
 
         assertThat(streamErrorHandlingException.getCause(), is(sqlException));
         assertThat(streamErrorHandlingException.getMessage(), is("Failed find StreamError by streamErrorId: 'f4ab7943-6220-45a0-8da9-200f5e877b67'"));
@@ -216,6 +217,74 @@ public class StreamErrorPersistenceTest {
 
         assertThat(streamErrorHandlingException.getCause(), is(sqlException));
         assertThat(streamErrorHandlingException.getMessage(), is("Failed to remove error for stream. streamId: 'ad6b76f1-96b7-423b-a2d0-4a922236c2ad', source: 'some-source, component: 'some-component'"));
+
+        verify(connection, never()).close();
+    }
+
+    @Test
+    public void shouldFindAllStreamErrorsByStreamId() throws Exception {
+
+        final UUID streamId = randomUUID();
+        final String hash = "some-hash";
+
+        final StreamErrorDetails streamErrorDetails_1 = mock(StreamErrorDetails.class);
+        final StreamErrorDetails streamErrorDetails_2 = mock(StreamErrorDetails.class);
+        final StreamErrorHash streamErrorHash = mock(StreamErrorHash.class);
+        final Connection connection = mock(Connection.class);
+
+        when(streamErrorDetailsPersistence.findByStreamId(streamId, connection)).thenReturn(List.of(streamErrorDetails_1, streamErrorDetails_2));
+
+        when(streamErrorDetails_1.hash()).thenReturn(hash);
+        when(streamErrorDetails_2.hash()).thenReturn(hash);
+        when(streamErrorHashPersistence.findByHash(hash, connection)).thenReturn(of(streamErrorHash));
+
+        final List<StreamError> streamErrors = streamErrorPersistence.findAllByStreamId(streamId, connection);
+
+        assertThat(streamErrors.size(), is(2));
+        assertThat(streamErrors.get(0).streamErrorDetails(), is(streamErrorDetails_1));
+        assertThat(streamErrors.get(0).streamErrorHash(), is(streamErrorHash));
+        assertThat(streamErrors.get(1).streamErrorDetails(), is(streamErrorDetails_2));
+        assertThat(streamErrors.get(1).streamErrorHash(), is(streamErrorHash));
+        verify(connection, never()).close();
+    }
+
+    @Test
+    public void shouldThrowStreamErrorHandlingExceptionIfFindAllByStreamIdFails() throws Exception {
+
+        final UUID streamId = fromString("30b0c79b-af2f-4826-a63f-503e27c8d932");
+        final SQLException sqlException = new SQLException("Ooops");
+
+        final Connection connection = mock(Connection.class);
+
+        when(streamErrorDetailsPersistence.findByStreamId(streamId, connection)).thenThrow(sqlException);
+
+        final StreamErrorHandlingException streamErrorHandlingException = assertThrows(
+                StreamErrorHandlingException.class,
+                () -> streamErrorPersistence.findAllByStreamId(streamId, connection));
+
+        assertThat(streamErrorHandlingException.getCause(), is(sqlException));
+        assertThat(streamErrorHandlingException.getMessage(), is("Failed find List of StreamErrors by streamId: '30b0c79b-af2f-4826-a63f-503e27c8d932'"));
+    }
+
+    @Test
+    public void shouldThrowStreamErrorHandlingExceptionIfNoMatchingStreamErrorHashFound() throws Exception {
+
+        final UUID streamId = randomUUID();
+        final String hash = "some-hash";
+
+        final StreamErrorDetails streamErrorDetails_1 = mock(StreamErrorDetails.class);
+        final Connection connection = mock(Connection.class);
+
+        when(streamErrorDetailsPersistence.findByStreamId(streamId, connection)).thenReturn(List.of(streamErrorDetails_1));
+
+        when(streamErrorDetails_1.hash()).thenReturn(hash);
+        when(streamErrorHashPersistence.findByHash(hash, connection)).thenReturn(empty());
+
+        final StreamErrorHandlingException streamErrorHandlingException = assertThrows(
+                StreamErrorHandlingException.class,
+                () -> streamErrorPersistence.findAllByStreamId(streamId, connection));
+
+        assertThat(streamErrorHandlingException.getMessage(), is("No stream_error found for hash 'some-hash' yet hash exists in stream_error table"));
 
         verify(connection, never()).close();
     }

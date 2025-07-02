@@ -1,5 +1,20 @@
 package uk.gov.justice.services.event.buffer.core.repository.streamerror;
 
+import java.sql.Connection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import javax.sql.DataSource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
+import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
+
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -9,26 +24,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
-import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
-
-import java.sql.Connection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.sql.DataSource;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+@ExtendWith(MockitoExtension.class)
 public class StreamErrorDetailsPersistenceIT {
 
     private final TestJdbcDataSourceProvider testJdbcDataSourceProvider = new TestJdbcDataSourceProvider();
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
-    private StreamErrorDetailsPersistence streamErrorDetailsPersistence = new StreamErrorDetailsPersistence();
-    private final StreamErrorHashPersistence streamErrorHashPersistence = new StreamErrorHashPersistence();
+    @Spy
+    private StreamErrorDetailsRowMapper streamErrorDetailsRowMapper;
+    @InjectMocks
+    private StreamErrorDetailsPersistence streamErrorDetailsPersistence;
+    @Spy
+    private StreamErrorHashRowMapper streamErrorHashRowMapper;
+    @InjectMocks
+    private StreamErrorHashPersistence streamErrorHashPersistence;
 
     @BeforeEach
     public void cleanTables() {
@@ -36,7 +44,7 @@ public class StreamErrorDetailsPersistenceIT {
     }
 
     @Test
-    public void shouldInsertAndFind() throws Exception {
+    public void shouldInsertAndFindById() throws Exception {
         final String hash = "sdlksdljfsdlf87236662846";
         final StreamErrorDetails streamErrorDetails = new StreamErrorDetails(
                 randomUUID(),
@@ -70,7 +78,7 @@ public class StreamErrorDetailsPersistenceIT {
         }
 
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-            final Optional<StreamErrorDetails> streamErrorDetailsOptional = streamErrorDetailsPersistence.findBy(
+            final Optional<StreamErrorDetails> streamErrorDetailsOptional = streamErrorDetailsPersistence.findById(
                     streamErrorDetails.id(),
                     connection);
 
@@ -79,6 +87,83 @@ public class StreamErrorDetailsPersistenceIT {
             } else {
                 fail();
             }
+        }
+    }
+
+    @Test
+    public void shouldInsertAndFindByStreamId() throws Exception {
+        final UUID streamId = randomUUID();
+        final String hash = "sdlksdljfsdlf87236662846";
+
+        final StreamErrorDetails streamErrorDetails_1 = new StreamErrorDetails(
+                randomUUID(),
+                hash,
+                "some-exception-message_1",
+                of("cause-message_1"),
+                "event-name_1",
+                randomUUID(),
+                streamId,
+                987342987L,
+                new UtcClock().now(),
+                "stack-trace_1",
+                "component-name_1",
+                "source_1"
+        );
+        final StreamErrorDetails streamErrorDetails_2 = new StreamErrorDetails(
+                randomUUID(),
+                hash,
+                "some-exception-message_2",
+                of("cause-message_2"),
+                "event-name_2",
+                randomUUID(),
+                randomUUID(),
+                97878L,
+                new UtcClock().now(),
+                "stack-trace_2",
+                "component-name_2",
+                "source_2"
+        );
+        final StreamErrorDetails streamErrorDetails_3 = new StreamErrorDetails(
+                randomUUID(),
+                hash,
+                "some-exception-message_3",
+                of("cause-message_3"),
+                "event-name_3",
+                randomUUID(),
+                streamId,
+                8793877L,
+                new UtcClock().now(),
+                "stack-trace_3",
+                "component-name_3",
+                "source_3"
+        );
+
+        final StreamErrorHash streamErrorHash = new StreamErrorHash(
+                hash,
+                "some-exception-class-name",
+                of("some-cause-class-name"),
+                "java-class-name",
+                "java-method",
+                213
+        );
+
+        final DataSource viewStoreDataSource = testJdbcDataSourceProvider.getViewStoreDataSource("framework");
+
+        try (final Connection connection = viewStoreDataSource.getConnection()) {
+            streamErrorHashPersistence.upsert(streamErrorHash, connection);
+            streamErrorDetailsPersistence.insert(streamErrorDetails_1, connection);
+            streamErrorDetailsPersistence.insert(streamErrorDetails_2, connection);
+            streamErrorDetailsPersistence.insert(streamErrorDetails_3, connection);
+        }
+
+        try (final Connection connection = viewStoreDataSource.getConnection()) {
+            final List<StreamErrorDetails> streamErrorDetailsList = streamErrorDetailsPersistence.findByStreamId(
+                    streamId,
+                    connection);
+
+            assertThat(streamErrorDetailsList.size(), is(2));
+            assertThat(streamErrorDetailsList.get(0), is(streamErrorDetails_1));
+            assertThat(streamErrorDetailsList.get(1), is(streamErrorDetails_3));
         }
     }
 

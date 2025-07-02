@@ -1,15 +1,14 @@
 package uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.util;
 
+import java.util.UUID;
+import java.util.stream.Stream;
+import javax.ejb.Singleton;
+import javax.inject.Inject;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.ConcurrentEventStreamConsumerManager;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
 import uk.gov.justice.services.eventstore.management.commands.EventCatchupCommand;
-
-import javax.ejb.Singleton;
-import javax.inject.Inject;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import static java.util.UUID.randomUUID;
 

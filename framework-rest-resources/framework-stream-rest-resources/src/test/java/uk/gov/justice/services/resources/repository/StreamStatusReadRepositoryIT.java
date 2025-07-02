@@ -15,8 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetails;
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetailsPersistence;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorDetailsRowMapper;
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHash;
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHashPersistence;
+import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHashRowMapper;
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamStatusErrorPersistence;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRowMapper;
@@ -89,19 +91,21 @@ public class StreamStatusReadRepositoryIT {
 
     @Spy
     private UtcClock utcClock;
-
     @InjectMocks
     private StreamStatusErrorPersistence streamStatusErrorPersistence;
 
+    @Spy
+    private StreamErrorHashRowMapper streamErrorHashRowMapper;
     @InjectMocks
     private StreamErrorHashPersistence streamErrorHashPersistence;
 
+    @Spy
+    private StreamErrorDetailsRowMapper streamErrorDetailsRowMapper;
     @InjectMocks
     private StreamErrorDetailsPersistence streamErrorDetailsPersistence;
 
     @Spy
     private NewStreamStatusRowMapper streamStatusRowMapper;
-
     @InjectMocks
     private StreamStatusReadRepository streamStatusReadRepository;
 
