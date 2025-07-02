@@ -5,7 +5,7 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### [Unreleased]
 ### Added
-- New json endpoint to show errors from the stream_error tables
+- New REST endpoint to fetch stream errors by streamId and errorId
 
 # [17.103.0-M21] - 2025-06-30
 ### Changed

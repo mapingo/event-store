@@ -1,8 +1,5 @@
 package uk.gov.justice.services.event.buffer.core.repository.streamerror;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,21 +7,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.inject.Inject;
+
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 public class StreamErrorHashPersistence {
 
-    private static final String FIND_BY_HASH_SQL = """
-            SELECT
-                exception_classname,
-                cause_classname,
-                java_classname,
-                java_method,
-                java_line_number
-            FROM stream_error_hash
-            WHERE hash = ?
-            """;
-
-    private static final String FIND_ALL_SQL = """
+    private static final String SELECT_CLAUSE = """
             SELECT
                 hash,
                 exception_classname,
@@ -32,8 +22,17 @@ public class StreamErrorHashPersistence {
                 java_classname,
                 java_method,
                 java_line_number
-            FROM stream_error_hash
             """;
+    private static final String FIND_BY_HASH_SQL = """
+            %s
+            FROM stream_error_hash
+            WHERE hash = ?
+            """.formatted(SELECT_CLAUSE);
+
+    private static final String FIND_ALL_SQL = """
+            %s
+            FROM stream_error_hash
+            """.formatted(SELECT_CLAUSE);
 
     private static final String INSERT_HASH_SQL = """
             INSERT INTO stream_error_hash (
@@ -53,6 +52,9 @@ public class StreamErrorHashPersistence {
                               from stream_error
                               where stream_error.hash = stream_error_hash.hash);
     """;
+
+    @Inject
+    private StreamErrorHashRowMapper streamErrorHashRowMapper;
 
     public int upsert(final StreamErrorHash streamErrorHash, final Connection connection) throws SQLException {
 
@@ -74,21 +76,7 @@ public class StreamErrorHashPersistence {
             preparedStatement.setString(1, hash);
             try(final ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    final String exceptionClassname = resultSet.getString("exception_classname");
-                    final String causeClassname = resultSet.getString("cause_classname");
-                    final String javaClassname = resultSet.getString("java_classname");
-                    final String javaMethod = resultSet.getString("java_method");
-                    final int javaLineNumber = resultSet.getInt("java_line_number");
-
-                    final StreamErrorHash streamErrorHash = new StreamErrorHash(
-                            hash,
-                            exceptionClassname,
-                            Optional.ofNullable(causeClassname),
-                            javaClassname,
-                            javaMethod,
-                            javaLineNumber
-                    );
-
+                    final StreamErrorHash streamErrorHash = streamErrorHashRowMapper.mapRow(resultSet);
                     return of(streamErrorHash);
                 }
             }
@@ -104,22 +92,7 @@ public class StreamErrorHashPersistence {
             final List<StreamErrorHash> streamErrorHashes = new ArrayList<>();
             try(final ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    final String hash = resultSet.getString("hash");
-                    final String exceptionClassname = resultSet.getString("exception_classname");
-                    final String causeClassname = resultSet.getString("cause_classname");
-                    final String javaClassname = resultSet.getString("java_classname");
-                    final String javaMethod = resultSet.getString("java_method");
-                    final int javaLineNumber = resultSet.getInt("java_line_number");
-
-                    final StreamErrorHash streamErrorHash = new StreamErrorHash(
-                            hash,
-                            exceptionClassname,
-                            Optional.ofNullable(causeClassname),
-                            javaClassname,
-                            javaMethod,
-                            javaLineNumber
-                    );
-
+                    final StreamErrorHash streamErrorHash = streamErrorHashRowMapper.mapRow(resultSet);
                     streamErrorHashes.add(streamErrorHash);
                 }
             }

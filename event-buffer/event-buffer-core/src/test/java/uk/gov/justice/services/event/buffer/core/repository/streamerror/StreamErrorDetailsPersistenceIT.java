@@ -1,5 +1,20 @@
 package uk.gov.justice.services.event.buffer.core.repository.streamerror;
 
+import java.sql.Connection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import javax.sql.DataSource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
+import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
+
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -9,26 +24,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
-import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
-
-import java.sql.Connection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.sql.DataSource;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+@ExtendWith(MockitoExtension.class)
 public class StreamErrorDetailsPersistenceIT {
 
     private final TestJdbcDataSourceProvider testJdbcDataSourceProvider = new TestJdbcDataSourceProvider();
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
-    private StreamErrorDetailsPersistence streamErrorDetailsPersistence = new StreamErrorDetailsPersistence();
-    private final StreamErrorHashPersistence streamErrorHashPersistence = new StreamErrorHashPersistence();
+    @Spy
+    private StreamErrorDetailsRowMapper streamErrorDetailsRowMapper;
+    @InjectMocks
+    private StreamErrorDetailsPersistence streamErrorDetailsPersistence;
+    @Spy
+    private StreamErrorHashRowMapper streamErrorHashRowMapper;
+    @InjectMocks
+    private StreamErrorHashPersistence streamErrorHashPersistence;
 
     @BeforeEach
     public void cleanTables() {
