@@ -45,6 +45,7 @@ public class StreamErrorRepositoryIT {
 
     @Spy
     private StreamErrorHashRowMapper streamErrorHashRowMapper;
+
     @InjectMocks
     private StreamErrorHashPersistence streamErrorHashPersistence;
 

@@ -42,6 +42,9 @@
     <properties>
         <cpp.repo.name>event-store</cpp.repo.name>
         <framework.version>17.103.0-M15</framework.version>
+
+        <!-- junit 4 version needed for deltaspike tests. Should be moved to common bom -->
+        <junit4.version>4.13.2</junit4.version>
     </properties>
 
     <dependencyManagement>
@@ -98,7 +101,6 @@
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
-
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>build-helper-maven-plugin</artifactId>
