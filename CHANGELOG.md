@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+
+# [17.103.0-M23] - 2025-07-07
 ### Added
 - New REST endpoint to fetch _active_ errors from the stream_error tables
 
