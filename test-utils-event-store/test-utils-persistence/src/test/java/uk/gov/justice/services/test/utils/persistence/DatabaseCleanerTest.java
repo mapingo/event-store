@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,6 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 public class DatabaseCleanerTest {
     private static final String SQL_PATTERN = "TRUNCATE TABLE %s CASCADE";
@@ -295,5 +297,30 @@ public class DatabaseCleanerTest {
         verify(connection).close();
         verify(preparedStatement_1).close();
         verify(preparedStatement_2).close();
+    }
+
+    @Test
+    public void shouldCleanViewStoreErrorTables() throws Exception {
+        final String streamErrorHashTable = "stream_error_hash";
+        final String streamErrorTable = "stream_error";
+        final String contextName = "my-context";
+
+        final Connection connection = mock(Connection.class);
+        final PreparedStatement preparedStatement_1 = mock(PreparedStatement.class);
+        final PreparedStatement preparedStatement_2 = mock(PreparedStatement.class);
+
+        when(testJdbcConnectionProvider.getViewStoreConnection(contextName)).thenReturn(connection);
+        when(connection.prepareStatement(format(SQL_PATTERN, streamErrorHashTable))).thenReturn(preparedStatement_1);
+        when(connection.prepareStatement(format(SQL_PATTERN, streamErrorTable))).thenReturn(preparedStatement_2);
+
+        databaseCleaner.cleanViewStoreErrorTables(contextName);
+
+        verify(testJdbcConnectionProvider, times(1)).getViewStoreConnection(contextName);
+        final InOrder inOrder = inOrder(connection, preparedStatement_1, preparedStatement_2);
+        inOrder.verify(preparedStatement_1).executeUpdate();
+        inOrder.verify(preparedStatement_1).close();
+        inOrder.verify(preparedStatement_2).executeUpdate();
+        inOrder.verify(preparedStatement_2).close();
+        inOrder.verify(connection).close();
     }
 }
