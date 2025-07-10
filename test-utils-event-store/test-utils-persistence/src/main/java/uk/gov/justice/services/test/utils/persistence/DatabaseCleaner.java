@@ -39,6 +39,10 @@ public class DatabaseCleaner {
 
     private final TestJdbcConnectionProvider testJdbcConnectionProvider;
 
+    private static final String VIEW_STORE_DATABASE_NAME = "view-store";
+    private static final String EVENT_STORE_DATABASE_NAME = "event-store";
+    private static final String SYSTEM_DATABASE_NAME = "system";
+
     public DatabaseCleaner() {
         this(new TestJdbcConnectionProvider());
     }
@@ -51,7 +55,7 @@ public class DatabaseCleaner {
     /**
      * Deletes all the data in the 'event_buffer' table
      *
-     * @param contextName the name of the context who's tables you are cleaning
+     * @param contextName the name of the context whose tables you are cleaning
      */
     public void cleanStreamBufferTable(final String contextName) {
         cleanViewStoreTables(contextName, "stream_buffer");
@@ -60,7 +64,7 @@ public class DatabaseCleaner {
     /**
      * Deletes all the data in the 'stream_status' table
      *
-     * @param contextName the name of the context who's tables you are cleaning
+     * @param contextName the name of the context whose tables you are cleaning
      */
     public void cleanStreamStatusTable(final String contextName) {
         cleanViewStoreTables(contextName, "stream_status");
@@ -69,10 +73,19 @@ public class DatabaseCleaner {
     /**
      * Deletes all the data in the 'processed_event' table
      *
-     * @param contextName the name of the context who's tables you are cleaning
+     * @param contextName the name of the context whose tables you are cleaning
      */
     public void cleanProcessedEventTable(final String contextName) {
         cleanViewStoreTables(contextName, "processed_event");
+    }
+
+    /**
+     * Deletes all the data in the 'processed_event' table
+     *
+     * @param contextName the name of the context whose tables you are cleaning
+     */
+    public void cleanViewStoreErrorTables(final String contextName) {
+        cleanViewStoreTables(contextName, "stream_error_hash", "stream_error");
     }
 
     /**
@@ -83,11 +96,11 @@ public class DatabaseCleaner {
     public void cleanEventStoreTables(final String contextName) {
         try (final Connection connection = testJdbcConnectionProvider.getEventStoreConnection(contextName)) {
 
-            cleanTable("event_log", connection);
-            cleanTable("event_stream", connection);
-            cleanTable("publish_queue", connection);
-            cleanTable("pre_publish_queue", connection);
-            cleanTable("published_event", connection);
+            truncateTable("event_log", EVENT_STORE_DATABASE_NAME, connection);
+            truncateTable("event_stream", EVENT_STORE_DATABASE_NAME, connection);
+            truncateTable("publish_queue", EVENT_STORE_DATABASE_NAME, connection);
+            truncateTable("pre_publish_queue", EVENT_STORE_DATABASE_NAME, connection);
+            truncateTable("published_event", EVENT_STORE_DATABASE_NAME, connection);
 
         } catch (SQLException e) {
             throw new DataAccessException("Failed to commit or close database connection", e);
@@ -102,10 +115,10 @@ public class DatabaseCleaner {
     public void cleanEventStoreTables(final String contextName, final String tableName, final String... additionalTableNames) {
         try (final Connection connection = testJdbcConnectionProvider.getEventStoreConnection(contextName)) {
 
-            cleanTable(tableName, connection);
+            truncateTable(tableName, EVENT_STORE_DATABASE_NAME, connection);
 
             for(String additionalTable: additionalTableNames) {
-                cleanTable(additionalTable, connection);
+                truncateTable(additionalTable, EVENT_STORE_DATABASE_NAME, connection);
             }
 
         } catch (SQLException e) {
@@ -148,7 +161,7 @@ public class DatabaseCleaner {
     public void cleanSystemTables(final String contextName) {
 
         try (final Connection connection = testJdbcConnectionProvider.getSystemConnection(contextName)) {
-            cleanTable("stored_command", connection);
+            truncateTable("stored_command", SYSTEM_DATABASE_NAME, connection);
         } catch (SQLException e) {
             throw new DataAccessException("Failed to commit or close database connection", e);
         }
@@ -167,15 +180,16 @@ public class DatabaseCleaner {
 
         try (final Connection connection = testJdbcConnectionProvider.getViewStoreConnection(contextName)) {
             for (String tableName : tableNames) {
-                cleanTable(tableName, connection);
+                truncateTable(tableName, VIEW_STORE_DATABASE_NAME, connection);
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to commit or close database connection", e);
         }
     }
 
-    private void cleanTable(final String tableName, final Connection connection) {
+    private void truncateTable(final String tableName, final String databaseName, final Connection connection) {
 
+        System.out.printf("Truncating table '%s' in %s database\n", tableName, databaseName);
         final String sql = format(SQL_PATTERN, tableName);
         try (final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.executeUpdate();
