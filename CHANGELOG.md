@@ -4,9 +4,12 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+
 ### Changed
 - Added framework.events.received to NewSubscriptionManagerDelegate to count correctly
 - Added new method `cleanViewStoreErrorTables()` in DatabaseCleaner test utility class to clean the new error tables in the viewstore
+### Removed
+- Deleted deprecated test helper class `TestJdbcDataSourceProvider`. Class moved to **test-utils-framework-persistence** in **microservices-framework**  
 
 # [17.103.0-M23] - 2025-07-07
 ### Added
