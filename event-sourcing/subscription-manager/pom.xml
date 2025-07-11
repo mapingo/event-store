@@ -130,7 +130,11 @@
             <artifactId>openejb-junit5</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-framework-persistence</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
