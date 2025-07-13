@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+
+# [17.103.0-M24] - 2025-07-13
 ### Changed
 - Update maven-framework-parent-pom to 17.103.0
 - Update framework to 17.103.0-M16
