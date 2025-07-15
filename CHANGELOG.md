@@ -5,6 +5,10 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### [Unreleased]
 
+# [17.103.0-M25] - 2025-07-15
+### Added
+- New warning log message on application startup that logs whether error handling is enabled or not 
+
 # [17.103.0-M24] - 2025-07-13
 ### Changed
 - Update maven-framework-parent-pom to 17.103.0

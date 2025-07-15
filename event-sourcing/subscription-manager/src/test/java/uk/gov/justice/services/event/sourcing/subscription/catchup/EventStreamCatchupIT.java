@@ -13,6 +13,7 @@ import org.apache.openejb.testing.Configuration;
 import org.apache.openejb.testing.Module;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.services.cdi.LoggerProducer;
+import uk.gov.justice.services.common.configuration.errors.event.EventErrorHandlingConfiguration;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.DummyEventQueueProcessingConfig;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.ConcurrentEventStreamConsumerManager;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.EventStreamsInProgressList;
@@ -57,7 +58,8 @@ public class EventStreamCatchupIT {
             ConsumeEventQueueTaskFactory.class,
             EventsInProcessCounterProvider.class,
             DummyEventQueueProcessingConfig.class,
-            EventQueueConsumer.class
+            EventQueueConsumer.class,
+            DummyEventErrorHandlingConfiguration.class
     })
     public WebApp war() {
         return new WebApp()
