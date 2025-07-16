@@ -5,101 +5,44 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### [Unreleased]
 
-# [17.103.0-M25] - 2025-07-15
+# [17.103.0] - 2025-07-16
 ### Added
-- New warning log message on application startup that logs whether error handling is enabled or not 
-
-# [17.103.0-M24] - 2025-07-13
-### Changed
-- Update maven-framework-parent-pom to 17.103.0
-- Update framework to 17.103.0-M16
-
-### Changed
-- Added framework.events.received to NewSubscriptionManagerDelegate to count correctly
-- Added new method `cleanViewStoreErrorTables()` in DatabaseCleaner test utility class to clean the new error tables in the viewstore
-### Removed
-- Deleted deprecated test helper class `TestJdbcDataSourceProvider`. Class moved to **test-utils-framework-persistence** in **microservices-framework**  
-
-# [17.103.0-M23] - 2025-07-07
-### Added
-- New REST endpoint to fetch _active_ errors from the stream_error tables
-
-# [17.103.0-M22] - 2025-07-02
-### Added
-- New REST endpoint to fetch stream errors by streamId and errorId
-
-# [17.103.0-M21] - 2025-06-30
-### Changed
-- Fetch streams by streamId and hasError
-
-# [17.103.0-M20] - 2025-06-27
-### Changed
-- Refactor NewSubscriptionManager to use EventSourceNameCalculator while calculating source
-- Fixed MeterNotFoundException thrown when looking up metrics meter with unknown tags
-
-# [17.103.0-M18] - 2025-06-24
-### Changed
-- Add tags for counters
-
-# [17.103.0-M17] - 2025-06-23
-### Changed
-- Add source and component for micrometer counters
-
-# [17.103.0-M16] - 2025-06-23
-### Changed
-- Refactor to extract resultSet mapping of StreamStatus for reusability
-- Add framework-stream-rest-resources library to event-store-bom
-
-# [17.103.0-M15] - 2025-06-20
-### Added
-- Global tags for micrometer gauges
-### Changed
-- Metrics lookup is now done using `source` and `component`
-- Individual Gauges refactored to Factory
-
-# [17.103.0-M14] - 2025-06-19
-### Added
+- Implement micrometer gauges and counters
+- Add micrometer counter base class
+- New SubscriptionManager class `NewSubscriptionManager`to handle the new way of processing events
+- New replacement StreamStatusRepository class for data access of stream_status table
+- Add index `stream_status_src_comp_idx` on `stream_status` table to improve stream metrics query
+- Update metrics names to match design document specification
 - New table stream_statistic to include statistics of streams per source, component and state
 - Added StreamStatisticTimerBean to fill stream_statistic every configured milliseconds
 - Add framework rest endpoint to fetch streams by errorHash
-
-# [17.103.0-M13] - 2025-06-18
-### Added
-- Add sql scripts to allow rollback of individual liquibase scripts
-- Add index `stream_status_src_comp_idx` on `stream_status` table to improve stream metrics query
-- Update metrics names to match design document specification
-
-# [17.103.0-M12] - 2025-06-12
-### Removed
-- Remove erroneous event-buffer liquibase script `015-create-stream-metrics-materialised-view.xml`
-
-# [17.103.0-M11] - 2025-06-11
-### Added
+- New warning log message on application startup that logs whether error handling is enabled or not 
+- New REST endpoint to fetch _active_ errors from the stream_error tables
+- New REST endpoint to fetch stream errors by streamId and errorId
 - Add means of getting micrometer tags for component and list of sources from subscription registry
-
-# [17.103.0-M10] - 2025-06-09
-### Changed
-- Updgrade framework to 17.103.0-M8 for:
- - Fix of deployment error if azure connection string is not in jndi (whether metrics are enabled or not)
-
-# [17.103.0-M9] - 2025-06-05
-### Added
-- Added temporary inefficient metrics query and plugged results into micrometer gauges
+- Add sql scripts to allow rollback of individual liquibase scripts
+- Global tags for micrometer gauges
 - Added new unblocked streams gauge
-
-# [17.103.0-M8] - 2025-06-03
-### Changed
-- Implement micrometer gauges and counters
-- Update framework to 17.103.0-M6
-
-# [17.103.0-M7] - 2025-05-29
-### Changed
-- Update framework to 17.103.0-M5 to add azure micrometer metrics
-### Added
 - New counter `events.processed.counter` to update number of events processed metric
-
-# [17.103.0-M6] - 2025-05-28
 ### Changed
+- Refactor the event buffer to:
+  - Run each event sent to the event listeners in its own transaction
+  - Update the `stream_status` table with `latest_known_position`
+  - Mark stream as 'up_to_date' when all events from event-buffer successfully processed
+- New column `latest_known_position` in `stream_status table`
+- New column `is_up_to_date` in `stream_status table`
+- New liquibase scripts to update stream_status table
+- Metrics lookup is now done using `source` and `component`
+- Individual Gauges refactored to Factory
+- Added framework.events.received to NewSubscriptionManagerDelegate to count correctly
+- Added new method `cleanViewStoreErrorTables()` in DatabaseCleaner test utility class to clean the new error tables in the viewstore
+- Fetch streams by streamId and hasError
+- Refactor NewSubscriptionManager to use EventSourceNameCalculator while calculating source
+- Fixed MeterNotFoundException thrown when looking up metrics meter with unknown tags
+- Add tags for counters
+- Refactor to extract resultSet mapping of StreamStatus for reusability
+- Add framework-stream-rest-resources library to event-store-bom
+- Add source and component for micrometer counters
 - Fix ReplayEventToEventListener, ReplayEventToEventIndexer, CatchUp command execution to work with selfhealing feature
 - Insert into stream_buffer table during event publishing is now idempotent
 - Update framework to 17.103.0-M2 in order to:
@@ -112,39 +55,11 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 - New column `is_up_to_date` in `stream_status table`
 - New liquibase scripts to update stream_status table
 - Release file-service extraction changes (via framework-libraries)
-### Added
-- New SubscriptionManager class `NewSubscriptionManager`to handle the new way of processing events
-- New replacement StreamStatusRepository class for data access of stream_status table
-
-# [17.103.0-M4] - 2025-05-23
-### Changed 
 - Insert into stream_buffer table during event publishing is now idempotent
-- Update framework-libraries to 17.103.0-M3 for:
-  - Move of prometheus metrics to cpp-platform-libraries in with the new azure metrics 
-### Added 
-- Add micrometer counter base class 
-
-# [17.103.0-M3] - 2025-04-30
-### Changed 
-- Update framework to 17.103.0-M2 in order to:
 - Change name of jndi value for self-healing from `event.error.handling.enabled` to `event.stream.self.healing.enabled`
-
-# [17.103.0-M2] - 2025-04-29
-### Changed
-- Refactor the event buffer to:
-  - Run each event sent to the event listeners in its own transaction
-  - Update the `stream_status` table with `latest_known_position`
-  - Mark stream as 'up_to_date' when all events from event-buffer successfully processed
-- New column `latest_known_position` in `stream_status table`
-- New column `is_up_to_date` in `stream_status table`
-- New liquibase scripts to update stream_status table
-### Added
-- New SubscriptionManager class `NewSubscriptionManager`to handle the new way of processing events
-- New replacement StreamStatusRepository class for data access of stream_status table 
-
-# [17.103.0-M1] - 2025-04-28
-### Changed
 - Release file-service extraction changes (via framework-libraries)
+### Removed
+- Deleted deprecated test helper class `TestJdbcDataSourceProvider`. Class moved to **test-utils-framework-persistence** in **microservices-framework**  
 
 ## [17.102.3] - 2025-04-16
 ### Changed
