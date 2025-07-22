@@ -109,7 +109,8 @@ public class StreamMetricsRepository {
             try (final PreparedStatement streamStatisticsLockStatement = connection.prepareStatement(LOCK_TABLE_STREAM_STATISTIC_IN_EXCLUSIVE_MODE_NOWAIT)) {
                 streamStatisticsLockStatement.executeUpdate();
             } catch (final SQLException e) {
-                throw new MetricsJdbcException("Failed to acquire the lock for stream statistics", e);
+                logger.info("Failed to acquire the lock for stream statistics", e);
+                return;
             }
 
             try (final PreparedStatement streamStatisticsStatement = connection.prepareStatement(CALCULATE_STREAM_STATISTIC_SQL)) {

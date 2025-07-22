@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.slf4j.Logger;
 import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 
 import java.sql.Connection;
@@ -75,6 +76,9 @@ public class StreamMetricsRepositoryTest {
 
     @Mock
     private ViewStoreJdbcDataSourceProvider viewStoreJdbcDataSourceProvider;
+
+    @Mock
+    private Logger logger;
 
     @InjectMocks
     private StreamMetricsRepository streamMetricsRepository;
@@ -200,7 +204,7 @@ public class StreamMetricsRepositoryTest {
     }
 
     @Test
-    public void shouldThrowMetricsJdbcExceptionIfLockingStreamStatisticTableFails() throws Exception {
+    public void shouldNotExecuteCalculationIfLockingStreamStatisticTableFails() throws Exception {
 
         final Timestamp freshnessLimit = Timestamp.valueOf(LocalDateTime.now());
         final SQLException sqlException = new SQLException("Some locking exception");
@@ -221,14 +225,13 @@ public class StreamMetricsRepositoryTest {
         when(resultSet.getTimestamp("most_recent_updated_at")).thenReturn(Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
 
         // run
-        final MetricsJdbcException metricsJdbcException = assertThrows(MetricsJdbcException.class,
-                () -> streamMetricsRepository.calculateStreamStatistic(freshnessLimit));
+        streamMetricsRepository.calculateStreamStatistic(freshnessLimit);
 
         // verify
-        assertThat(metricsJdbcException.getCause(), is(sqlException));
-        assertThat(metricsJdbcException.getMessage(), is("Failed to acquire the lock for stream statistics"));
-
+        verify(connection, never()).prepareStatement(CALCULATE_STREAM_STATISTIC);
         verify(connection).close();
+        verify(checkMostRecentStatement).close();
+        verify(resultSet).close();
     }
 
     @Test
