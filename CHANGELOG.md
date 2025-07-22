@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+### Added
+- Execute lock statement before calculating stream statistics
 
 # [17.103.0] - 2025-07-16
 ### Added

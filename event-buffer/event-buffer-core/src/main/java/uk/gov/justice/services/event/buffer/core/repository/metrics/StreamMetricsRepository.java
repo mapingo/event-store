@@ -98,6 +98,12 @@ public class StreamMetricsRepository {
                 return;
             }
 
+            try (final PreparedStatement streamStatisticsStatement = connection.prepareStatement("LOCK TABLE stream_statistic IN EXCLUSIVE MODE NOWAIT")) {
+                streamStatisticsStatement.executeUpdate();
+            } catch (final SQLException e) {
+                return;
+            }
+
             try (final PreparedStatement streamStatisticsStatement = connection.prepareStatement(CALCULATE_STREAM_STATISTIC_SQL)) {
                 streamStatisticsStatement.executeUpdate();
             }
