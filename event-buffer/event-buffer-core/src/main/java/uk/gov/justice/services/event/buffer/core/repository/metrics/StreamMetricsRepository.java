@@ -3,6 +3,7 @@ package uk.gov.justice.services.event.buffer.core.repository.metrics;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
+import org.slf4j.Logger;
 import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 
 import java.sql.Connection;
@@ -15,6 +16,10 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 public class StreamMetricsRepository {
+
+    public static final String LOCK_TABLE_STREAM_STATISTIC_IN_EXCLUSIVE_MODE_NOWAIT = """
+            LOCK TABLE stream_statistic IN EXCLUSIVE MODE NOWAIT
+            """;
 
     private static final String STREAM_METRICS_SQL = """
             SELECT
@@ -51,6 +56,9 @@ public class StreamMetricsRepository {
 
     private static final String MOST_RECENT_UPDATED_AT_SQL =
             "SELECT MAX(updated_at) as most_recent_updated_at FROM stream_statistic";
+
+    @Inject
+    private Logger logger;
 
     @Inject
     private ViewStoreJdbcDataSourceProvider viewStoreJdbcDataSourceProvider;
@@ -98,10 +106,10 @@ public class StreamMetricsRepository {
                 return;
             }
 
-            try (final PreparedStatement streamStatisticsStatement = connection.prepareStatement("LOCK TABLE stream_statistic IN EXCLUSIVE MODE NOWAIT")) {
-                streamStatisticsStatement.executeUpdate();
+            try (final PreparedStatement streamStatisticsLockStatement = connection.prepareStatement(LOCK_TABLE_STREAM_STATISTIC_IN_EXCLUSIVE_MODE_NOWAIT)) {
+                streamStatisticsLockStatement.executeUpdate();
             } catch (final SQLException e) {
-                return;
+                throw new MetricsJdbcException("Failed to acquire the lock for stream statistics", e);
             }
 
             try (final PreparedStatement streamStatisticsStatement = connection.prepareStatement(CALCULATE_STREAM_STATISTIC_SQL)) {
