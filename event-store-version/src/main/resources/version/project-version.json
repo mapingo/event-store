@@ -1,0 +1,6 @@
+{
+    "projectName": "Event Store",
+    "displayOrder": 40,
+    "projectVersion": "${project.version}",
+    "buildTimestamp": "${maven.build.timestamp}"
+}
