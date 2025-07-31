@@ -14,6 +14,7 @@ import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.event.buffer.core.repository.streambuffer.NewEventBufferRepository;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamStatusLockingException;
 import uk.gov.justice.services.event.sourcing.subscription.error.MissingPositionInStreamException;
 import uk.gov.justice.services.event.sourcing.subscription.error.StreamErrorRepository;
 import uk.gov.justice.services.event.sourcing.subscription.error.StreamErrorStatusHandler;
@@ -460,9 +461,9 @@ public class SubscriptionEventProcessorTest {
     }
 
     @Test
-    public void shouldThrowStreamProcessingExceptionAndRecordErrorIfLockRowAndGetPositionsFails() throws Exception {
+    public void shouldThrowStreamProcessingExceptionAndNotRecordErrorIfLockRowAndGetPositionsFails() throws Exception {
 
-        final NullPointerException nullPointerException = new NullPointerException("Ooops");
+        final StreamStatusLockingException streamStatusLockingException = new StreamStatusLockingException("Ooops");
 
         final UUID eventId = fromString("ba0c36e1-659e-430c-9d33-67eda5ca70cd");
         final UUID streamId = fromString("4f4815fa-825d-4869-a37f-e443dea21d18");
@@ -480,14 +481,16 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        doThrow(nullPointerException).when(newStreamStatusRepository).lockRowAndGetPositions(
+        doThrow(streamStatusLockingException).when(newStreamStatusRepository).lockRowAndGetPositions(
                 streamId,
                 source,
                 component,
                 eventPositionInStream);
 
-        assertThrows(StreamProcessingException.class,
+        final StreamProcessingException streamProcessingException = assertThrows(StreamProcessingException.class,
                 () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component));
+
+        assertThat(streamProcessingException.getCause(), is(streamStatusLockingException));
 
         final InOrder inOrder = inOrder(
                 transactionHandler,
@@ -496,10 +499,10 @@ public class SubscriptionEventProcessorTest {
 
         inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).rollback(userTransaction);
-        inOrder.verify(streamErrorStatusHandler).onStreamProcessingFailure(eventJsonEnvelope, nullPointerException, source, component);
 
         verify(micrometerMetricsCounters, never()).incrementEventsSucceededCount(source, component);
         verify(micrometerMetricsCounters, never()).incrementEventsIgnoredCount(source, component);
+        verify(streamErrorStatusHandler, never()).onStreamProcessingFailure(eventJsonEnvelope, streamStatusLockingException, source, component);
         verifyNoInteractions(eventProcessingStatusCalculator, interceptorChainProcessorProducer, newEventBufferRepository);
     }
 

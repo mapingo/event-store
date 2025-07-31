@@ -4,6 +4,9 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+### Changed
+- Locking of stream_status table when publishing events, no longer calls error tables updates on locking errors
+
 # [17.104.0-M1] - 2025-07-29
 ### Added
 - New REST endpoint that will serve json showing the various framework project versions on the path `/internal/framework/versions` 
