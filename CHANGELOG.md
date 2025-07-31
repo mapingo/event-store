@@ -4,6 +4,10 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+### Changed
+- Locking of stream_status table when publishing events, no longer calls error tables updates on locking errors 
+
+
 # [17.103.1-M1] - 2025-07-22
 ### Added
 - Execute lock statement before calculating stream statistics

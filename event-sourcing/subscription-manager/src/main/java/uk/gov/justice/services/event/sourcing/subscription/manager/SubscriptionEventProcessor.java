@@ -11,6 +11,7 @@ import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.event.buffer.core.repository.streambuffer.NewEventBufferRepository;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamStatusLockingException;
 import uk.gov.justice.services.event.sourcing.subscription.error.MissingPositionInStreamException;
 import uk.gov.justice.services.event.sourcing.subscription.error.StreamErrorRepository;
 import uk.gov.justice.services.event.sourcing.subscription.error.StreamErrorStatusHandler;
@@ -107,7 +108,10 @@ public class SubscriptionEventProcessor {
 
             return eventProcessed.get();
 
-        } catch (final Throwable e) {
+        } catch (final StreamStatusLockingException e) {
+            transactionHandler.rollback(userTransaction);
+            throw new StreamProcessingException(format("Failed to process event. name: '%s', eventId: '%s', streamId: '%s'", name, eventId, streamId), e);
+        } catch (final Exception e) {
             transactionHandler.rollback(userTransaction);
             streamErrorStatusHandler.onStreamProcessingFailure(eventJsonEnvelope, e, source, component);
             throw new StreamProcessingException(format("Failed to process event. name: '%s', eventId: '%s', streamId: '%s'", name, eventId, streamId), e);
