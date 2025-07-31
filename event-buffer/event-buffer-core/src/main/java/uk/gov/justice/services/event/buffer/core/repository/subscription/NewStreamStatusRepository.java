@@ -177,14 +177,14 @@ public class NewStreamStatusRepository {
                 }
             }
 
-            throw new StreamStatusException(format(
+            throw new StreamStatusLockingException(format(
                     "Failed to select for update from stream_status table; No stream not found with stream_id '%s', source '%s', component '%s",
                     streamId,
                     source,
                     componentName));
 
         } catch (final SQLException e) {
-            throw new StreamStatusException(format(
+            throw new StreamStatusLockingException(format(
                     "Failed to select for update from stream_status table; stream_id '%s', source '%s', component '%s",
                     streamId,
                     source,
