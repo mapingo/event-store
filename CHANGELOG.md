@@ -6,7 +6,9 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 ### [Unreleased]
 ### Changed
 - `lockRowAndGetPositions(...)` renamed to `lockStreamAndGetStreamUpdateContext(...)`
-- `lockStreamAndGetStreamUpdateContext(...)` on stream_status table now returns an Optional `streamErrorId` 
+- `lockStreamAndGetStreamUpdateContext(...)` on stream_status table now returns an Optional `streamErrorId`
+### Added
+- New index 'stream_error.hash.idx' on stream_error.hash column
 
 # [17.103.1-M2] - 2025-08-04
 ### Changed
