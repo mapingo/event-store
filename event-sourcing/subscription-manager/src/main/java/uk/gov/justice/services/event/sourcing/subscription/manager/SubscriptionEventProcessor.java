@@ -91,7 +91,10 @@ public class SubscriptionEventProcessor {
 
                 newStreamStatusRepository.updateCurrentPosition(streamId, source, component, eventPositionInStream);
                 newEventBufferRepository.remove(streamId, source, component, eventPositionInStream);
-                streamErrorRepository.markStreamAsFixed(streamId, source, component);
+
+                if (streamUpdateContext.streamCurrentlyErrored()) {
+                    streamErrorRepository.markStreamAsFixed(streamId, source, component);
+                }
 
                 if (streamUpdateContext.latestKnownStreamPosition() == eventPositionInStream) {
                     newStreamStatusRepository.setUpToDate(true, streamId, source, component);

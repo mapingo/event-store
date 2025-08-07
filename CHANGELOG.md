@@ -10,7 +10,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 # [17.103.1-M2] - 2025-08-04
 ### Changed
-- Locking of stream_status table when publishing events, no longer calls error tables updates on locking errors 
+- Locking of stream_status table when publishing events, no longer calls error tables updates on locking errors
+- Streams no longer marked as fixed by default and will only mark as fixed if stream previously broken 
 
 # [17.103.1-M1] - 2025-07-22
 ### Added

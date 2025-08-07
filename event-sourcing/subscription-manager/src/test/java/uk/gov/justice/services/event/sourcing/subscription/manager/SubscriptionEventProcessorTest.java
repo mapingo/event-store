@@ -99,6 +99,71 @@ public class SubscriptionEventProcessorTest {
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
+        when(streamUpdateContext.streamCurrentlyErrored()).thenReturn(false);
+        when(eventJsonEnvelope.metadata()).thenReturn(metadata);
+        when(metadata.name()).thenReturn(eventName);
+        when(metadata.id()).thenReturn(eventId);
+        when(metadata.streamId()).thenReturn(of(streamId));
+        when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
+        when(metadata.position()).thenReturn(of(eventPositionInStream));
+        when(streamUpdateContext.latestKnownStreamPosition()).thenReturn(eventPositionInStream);
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
+                streamId,
+                source,
+                component,
+                eventPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_CORRECTLY_ORDERED);
+        when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
+        when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
+
+        assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component), is(true));
+
+        final InOrder inOrder = inOrder(
+                transactionHandler,
+                newStreamStatusRepository,
+                interceptorChainProcessor,
+                newEventBufferRepository,
+                newStreamStatusRepository,
+                streamErrorRepository,
+                transactionHandler,
+                micrometerMetricsCounters);
+
+        inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
+        inOrder.verify(transactionHandler).begin(userTransaction);
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
+                streamId,
+                source,
+                component,
+                eventPositionInStream);
+        inOrder.verify(interceptorChainProcessor).process(interceptorContext);
+        inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, component, eventPositionInStream);
+        inOrder.verify(newEventBufferRepository).remove(streamId, source, component, eventPositionInStream);
+        inOrder.verify(newStreamStatusRepository).setUpToDate(true, streamId, source, component);
+        inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount(source, component);
+        inOrder.verify(transactionHandler).commit(userTransaction);
+
+        verify(streamErrorRepository, never()).markStreamAsFixed(streamId, source, component);
+        verify(transactionHandler, never()).rollback(userTransaction);
+        verify(micrometerMetricsCounters, never()).incrementEventsFailedCount(source, component);
+    }
+
+    @Test
+    public void shouldMarkStreamAsFixedAfterSuccessfulCompletionIfStreamCurrentlyInError() throws Exception {
+
+        final UUID eventId = randomUUID();
+        final UUID streamId = randomUUID();
+        final String eventName = "some-event-name";
+        final String source = "some-source";
+        final String component = "some-component";
+        final long eventPositionInStream = 7686;
+
+        final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
+        final Metadata metadata = mock(Metadata.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
+        final InterceptorContext interceptorContext = mock(InterceptorContext.class);
+        final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
+
+        when(streamUpdateContext.streamCurrentlyErrored()).thenReturn(true);
         when(eventJsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.name()).thenReturn(eventName);
         when(metadata.id()).thenReturn(eventId);
@@ -142,7 +207,6 @@ public class SubscriptionEventProcessorTest {
         inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount(source, component);
         inOrder.verify(transactionHandler).commit(userTransaction);
 
-        verify(transactionHandler, never()).rollback(userTransaction);
         verify(micrometerMetricsCounters, never()).incrementEventsFailedCount(source, component);
     }
 
@@ -163,6 +227,7 @@ public class SubscriptionEventProcessorTest {
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
+        when(streamUpdateContext.streamCurrentlyErrored()).thenReturn(false);
         when(eventJsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.name()).thenReturn(eventName);
         when(metadata.id()).thenReturn(eventId);
@@ -201,10 +266,10 @@ public class SubscriptionEventProcessorTest {
         inOrder.verify(interceptorChainProcessor).process(interceptorContext);
         inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, component, eventPositionInStream);
         inOrder.verify(newEventBufferRepository).remove(streamId, source, component, eventPositionInStream);
-        inOrder.verify(streamErrorRepository).markStreamAsFixed(streamId, source, component);
         inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount(source, component);
         inOrder.verify(transactionHandler).commit(userTransaction);
 
+        verify(streamErrorRepository, never()).markStreamAsFixed(streamId, source, component);
         verify(transactionHandler, never()).rollback(userTransaction);
         verify(newStreamStatusRepository, never()).setUpToDate(true, streamId, source, component);
         verify(micrometerMetricsCounters, never()).incrementEventsFailedCount(source, component);
@@ -226,6 +291,7 @@ public class SubscriptionEventProcessorTest {
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
+        when(streamUpdateContext.streamCurrentlyErrored()).thenReturn(false);
         when(eventJsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.name()).thenReturn(eventName);
         when(metadata.id()).thenReturn(eventId);
@@ -263,10 +329,10 @@ public class SubscriptionEventProcessorTest {
         inOrder.verify(interceptorChainProcessor).process(interceptorContext);
         inOrder.verify(newStreamStatusRepository).updateCurrentPosition(streamId, source, component, eventPositionInStream);
         inOrder.verify(newEventBufferRepository).remove(streamId, source, component, eventPositionInStream);
-        inOrder.verify(streamErrorRepository).markStreamAsFixed(streamId, source, component);
         inOrder.verify(micrometerMetricsCounters).incrementEventsSucceededCount(source, component);
         inOrder.verify(transactionHandler).commit(userTransaction);
 
+        verify(streamErrorRepository, never()).markStreamAsFixed(streamId, source, component);
         verify(transactionHandler, never()).rollback(userTransaction);
         verify(micrometerMetricsCounters, never()).incrementEventsFailedCount(source, component);
     }
