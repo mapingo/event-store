@@ -16,6 +16,7 @@ import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
 
 @SuppressWarnings("java:S1192")
@@ -67,12 +68,13 @@ public class NewStreamStatusRepository {
     private static final String LOCK_AND_GET_POSITIONS_SQL = """
                 SELECT
                         position,
-                        latest_known_position
+                        latest_known_position,
+                        stream_error_id
                 FROM stream_status
                 WHERE stream_id = ?
                 AND source = ?
                 AND component = ?
-                FOR UPDATE
+                FOR NO KEY UPDATE 
                 """;
     private static final String UPDATE_CURRENT_POSITION_IN_STREAM = """
                 UPDATE stream_status
@@ -155,7 +157,7 @@ public class NewStreamStatusRepository {
         }
     }
 
-    public StreamPositions lockRowAndGetPositions(final UUID streamId, final String source, final String componentName, final long incomingEventPosition) {
+    public StreamUpdateContext lockStreamAndGetStreamUpdateContext(final UUID streamId, final String source, final String componentName, final long incomingEventPosition) {
 
         try (final Connection connection = viewStoreJdbcDataSourceProvider.getDataSource().getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(LOCK_AND_GET_POSITIONS_SQL)) {
@@ -168,11 +170,13 @@ public class NewStreamStatusRepository {
                 if (resultSet.next()) {
                     final long currentStreamPosition = resultSet.getLong("position");
                     final long latestKnownPosition = resultSet.getLong("latest_known_position");
+                    final UUID streamErrorId = resultSet.getObject("stream_error_id", UUID.class);
 
-                    return new StreamPositions(
+                    return new StreamUpdateContext(
                             incomingEventPosition,
                             currentStreamPosition,
-                            latestKnownPosition
+                            latestKnownPosition,
+                            ofNullable(streamErrorId)
                     );
                 }
             }

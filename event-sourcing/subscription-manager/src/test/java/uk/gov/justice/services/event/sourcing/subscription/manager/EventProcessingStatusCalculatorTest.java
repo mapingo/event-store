@@ -8,7 +8,7 @@ import static uk.gov.justice.services.event.sourcing.subscription.manager.EventO
 import static uk.gov.justice.services.event.sourcing.subscription.manager.EventOrderingStatus.EVENT_CORRECTLY_ORDERED;
 import static uk.gov.justice.services.event.sourcing.subscription.manager.EventOrderingStatus.EVENT_OUT_OF_ORDER;
 
-import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,13 +27,13 @@ public class EventProcessingStatusCalculatorTest {
         final long incomingEventPosition = 24;
         final long currentStreamPosition = 23;
 
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
-        when(streamPositions.incomingEventPosition()).thenReturn(incomingEventPosition);
-        when(streamPositions.currentStreamPosition()).thenReturn(currentStreamPosition);
+        when(streamUpdateContext.incomingEventPosition()).thenReturn(incomingEventPosition);
+        when(streamUpdateContext.currentStreamPosition()).thenReturn(currentStreamPosition);
 
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions), is(EVENT_CORRECTLY_ORDERED));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext), is(EVENT_CORRECTLY_ORDERED));
     }
 
     @Test
@@ -42,13 +42,13 @@ public class EventProcessingStatusCalculatorTest {
         final long incomingEventPosition = 26;
         final long currentStreamPosition = 23;
 
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
-        when(streamPositions.incomingEventPosition()).thenReturn(incomingEventPosition);
-        when(streamPositions.currentStreamPosition()).thenReturn(currentStreamPosition);
+        when(streamUpdateContext.incomingEventPosition()).thenReturn(incomingEventPosition);
+        when(streamUpdateContext.currentStreamPosition()).thenReturn(currentStreamPosition);
 
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions), is(EVENT_OUT_OF_ORDER));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext), is(EVENT_OUT_OF_ORDER));
     }
 
     @Test
@@ -57,13 +57,13 @@ public class EventProcessingStatusCalculatorTest {
         final long incomingEventPosition = 22;
         final long currentStreamPosition = 23;
 
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
-        when(streamPositions.incomingEventPosition()).thenReturn(incomingEventPosition);
-        when(streamPositions.currentStreamPosition()).thenReturn(currentStreamPosition);
+        when(streamUpdateContext.incomingEventPosition()).thenReturn(incomingEventPosition);
+        when(streamUpdateContext.currentStreamPosition()).thenReturn(currentStreamPosition);
 
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions), is(EVENT_ALREADY_PROCESSED));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext), is(EVENT_ALREADY_PROCESSED));
     }
 
     @Test
@@ -72,12 +72,12 @@ public class EventProcessingStatusCalculatorTest {
         final long incomingEventPosition = 23;
         final long currentStreamPosition = 23;
 
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
-        when(streamPositions.incomingEventPosition()).thenReturn(incomingEventPosition);
-        when(streamPositions.currentStreamPosition()).thenReturn(currentStreamPosition);
+        when(streamUpdateContext.incomingEventPosition()).thenReturn(incomingEventPosition);
+        when(streamUpdateContext.currentStreamPosition()).thenReturn(currentStreamPosition);
 
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions), is(EVENT_ALREADY_PROCESSED));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext), is(EVENT_ALREADY_PROCESSED));
     }
 }

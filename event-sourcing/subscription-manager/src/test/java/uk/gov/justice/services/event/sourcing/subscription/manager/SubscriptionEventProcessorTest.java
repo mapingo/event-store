@@ -13,7 +13,7 @@ import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProduce
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.event.buffer.core.repository.streambuffer.NewEventBufferRepository;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
-import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamStatusLockingException;
 import uk.gov.justice.services.event.sourcing.subscription.error.MissingPositionInStreamException;
 import uk.gov.justice.services.event.sourcing.subscription.error.StreamErrorRepository;
@@ -95,7 +95,7 @@ public class SubscriptionEventProcessorTest {
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
@@ -105,13 +105,13 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        when(streamPositions.latestKnownStreamPosition()).thenReturn(eventPositionInStream);
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(streamUpdateContext.latestKnownStreamPosition()).thenReturn(eventPositionInStream);
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
-                eventPositionInStream)).thenReturn(streamPositions);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
+                eventPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_CORRECTLY_ORDERED);
         when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
         when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
 
@@ -129,7 +129,7 @@ public class SubscriptionEventProcessorTest {
 
         inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
@@ -159,7 +159,7 @@ public class SubscriptionEventProcessorTest {
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
@@ -169,13 +169,13 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        when(streamPositions.latestKnownStreamPosition()).thenReturn(latestKnowPositionInStream);
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(streamUpdateContext.latestKnownStreamPosition()).thenReturn(latestKnowPositionInStream);
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
-                eventPositionInStream)).thenReturn(streamPositions);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
+                eventPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_CORRECTLY_ORDERED);
         when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
         when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
 
@@ -193,7 +193,7 @@ public class SubscriptionEventProcessorTest {
 
         micrometerMetricsCounters.incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
@@ -222,7 +222,7 @@ public class SubscriptionEventProcessorTest {
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
@@ -232,12 +232,12 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
-                eventPositionInStream)).thenReturn(streamPositions);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
+                eventPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_CORRECTLY_ORDERED);
         when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
         when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
 
@@ -255,7 +255,7 @@ public class SubscriptionEventProcessorTest {
 
         inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
@@ -283,7 +283,7 @@ public class SubscriptionEventProcessorTest {
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
@@ -293,12 +293,12 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
-                eventPositionInStream)).thenReturn(streamPositions);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_OUT_OF_ORDER);
+                eventPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_OUT_OF_ORDER);
 
         assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component), is(false));
 
@@ -314,7 +314,7 @@ public class SubscriptionEventProcessorTest {
 
         micrometerMetricsCounters.incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
@@ -342,7 +342,7 @@ public class SubscriptionEventProcessorTest {
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
@@ -352,12 +352,12 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
-                eventPositionInStream)).thenReturn(streamPositions);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_ALREADY_PROCESSED);
+                eventPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_ALREADY_PROCESSED);
 
         assertThat(subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component), is(false));
 
@@ -373,7 +373,7 @@ public class SubscriptionEventProcessorTest {
 
         inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
@@ -405,7 +405,7 @@ public class SubscriptionEventProcessorTest {
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
         final InterceptorContext interceptorContext = mock(InterceptorContext.class);
         final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
@@ -415,12 +415,12 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
-                eventPositionInStream)).thenReturn(streamPositions);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
+                eventPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_CORRECTLY_ORDERED);
         when(interceptorChainProcessorProducer.produceLocalProcessor(component)).thenReturn(interceptorChainProcessor);
         when(interceptorContextProvider.getInterceptorContext(eventJsonEnvelope)).thenReturn(interceptorContext);
         doThrow(nullPointerException).when(interceptorChainProcessor).process(interceptorContext);
@@ -444,7 +444,7 @@ public class SubscriptionEventProcessorTest {
 
         inOrder.verify(micrometerMetricsCounters).incrementEventsProcessedCount(source, component);
         inOrder.verify(transactionHandler).begin(userTransaction);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
@@ -481,7 +481,7 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        doThrow(streamStatusLockingException).when(newStreamStatusRepository).lockRowAndGetPositions(
+        doThrow(streamStatusLockingException).when(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
@@ -520,7 +520,7 @@ public class SubscriptionEventProcessorTest {
 
         final JsonEnvelope eventJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
         when(eventJsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.name()).thenReturn(eventName);
@@ -528,12 +528,12 @@ public class SubscriptionEventProcessorTest {
         when(metadata.streamId()).thenReturn(of(streamId));
         when(eventSourceNameCalculator.getSource(eventJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(eventPositionInStream));
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
-                eventPositionInStream)).thenReturn(streamPositions);
-        doThrow(nullPointerException).when(eventProcessingStatusCalculator).calculateEventOrderingStatus(streamPositions);
+                eventPositionInStream)).thenReturn(streamUpdateContext);
+        doThrow(nullPointerException).when(eventProcessingStatusCalculator).calculateEventOrderingStatus(streamUpdateContext);
 
         assertThrows(StreamProcessingException.class,
                 () -> subscriptionEventProcessor.processSingleEvent(eventJsonEnvelope, component));

@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
-import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 
 import java.util.UUID;
 
@@ -36,14 +36,14 @@ public class LatestKnownPositionAndIsUpToDateUpdaterTest {
         final String source = "some-source";
         final String componentName = "some-component";
 
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
 
-        when(streamPositions.latestKnownStreamPosition()).thenReturn(latestKnownStreamPosition);
-        when(streamPositions.incomingEventPosition()).thenReturn(incomingPositionInStream);
+        when(streamUpdateContext.latestKnownStreamPosition()).thenReturn(latestKnownStreamPosition);
+        when(streamUpdateContext.incomingEventPosition()).thenReturn(incomingPositionInStream);
 
         latestKnownPositionAndIsUpToDateUpdater.updateIfNecessary(
-                streamPositions,
+                streamUpdateContext,
                 streamId,
                 source,
                 componentName
@@ -62,14 +62,14 @@ public class LatestKnownPositionAndIsUpToDateUpdaterTest {
         final String source = "some-source";
         final String componentName = "some-component";
 
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
 
-        when(streamPositions.latestKnownStreamPosition()).thenReturn(latestKnownStreamPosition);
-        when(streamPositions.incomingEventPosition()).thenReturn(incomingPositionInStream);
+        when(streamUpdateContext.latestKnownStreamPosition()).thenReturn(latestKnownStreamPosition);
+        when(streamUpdateContext.incomingEventPosition()).thenReturn(incomingPositionInStream);
 
         latestKnownPositionAndIsUpToDateUpdater.updateIfNecessary(
-                streamPositions,
+                streamUpdateContext,
                 streamId,
                 source,
                 componentName
@@ -88,14 +88,14 @@ public class LatestKnownPositionAndIsUpToDateUpdaterTest {
         final String source = "some-source";
         final String componentName = "some-component";
 
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
 
-        when(streamPositions.latestKnownStreamPosition()).thenReturn(latestKnownStreamPosition);
-        when(streamPositions.incomingEventPosition()).thenReturn(incomingPositionInStream);
+        when(streamUpdateContext.latestKnownStreamPosition()).thenReturn(latestKnownStreamPosition);
+        when(streamUpdateContext.incomingEventPosition()).thenReturn(incomingPositionInStream);
 
         latestKnownPositionAndIsUpToDateUpdater.updateIfNecessary(
-                streamPositions,
+                streamUpdateContext,
                 streamId,
                 source,
                 componentName

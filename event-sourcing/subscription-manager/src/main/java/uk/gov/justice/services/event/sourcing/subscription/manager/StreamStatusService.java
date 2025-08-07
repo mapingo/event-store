@@ -5,7 +5,7 @@ import static javax.transaction.Transactional.TxType.NOT_SUPPORTED;
 
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
-import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamStatusException;
 import uk.gov.justice.services.event.sourcing.subscription.error.MissingPositionInStreamException;
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingStreamIdException;
@@ -74,19 +74,19 @@ public class StreamStatusService {
                     clock.now(),
                     false);
 
-            final StreamPositions streamPositions = newStreamStatusRepository.lockRowAndGetPositions(
+            final StreamUpdateContext streamUpdateContext = newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                     streamId,
                     source,
                     component,
                     incomingPositionInStream);
 
             latestKnownPositionAndIsUpToDateUpdater.updateIfNecessary(
-                    streamPositions,
+                    streamUpdateContext,
                     streamId,
                     source,
                     component);
 
-            final EventOrderingStatus eventOrderingStatus = eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions);
+            final EventOrderingStatus eventOrderingStatus = eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext);
 
             switch (eventOrderingStatus) {
                 case EVENT_OUT_OF_ORDER ->
@@ -96,8 +96,8 @@ public class StreamStatusService {
                     logger.info(format("Duplicate incoming event detected. Event already processed; ignoring. eventId: '%s', streamId: '%s', incomingEventPositionInStream '%d' currentStreamPosition: '%d'",
                             eventId,
                             streamId,
-                            streamPositions.incomingEventPosition(),
-                            streamPositions.currentStreamPosition()));
+                            streamUpdateContext.incomingEventPosition(),
+                            streamUpdateContext.currentStreamPosition()));
                 }
             }
 

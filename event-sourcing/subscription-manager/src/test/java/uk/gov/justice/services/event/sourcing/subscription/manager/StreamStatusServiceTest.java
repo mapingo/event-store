@@ -19,7 +19,7 @@ import static uk.gov.justice.services.event.sourcing.subscription.manager.EventO
 
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
-import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamStatusException;
 import uk.gov.justice.services.event.sourcing.subscription.error.MissingPositionInStreamException;
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingStreamIdException;
@@ -90,7 +90,7 @@ public class StreamStatusServiceTest {
 
         final JsonEnvelope incomingJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
         when(incomingJsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.name()).thenReturn(name);
@@ -99,12 +99,12 @@ public class StreamStatusServiceTest {
         when(eventSourceNameCalculator.getSource(incomingJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(incomingPositionInStream));
         when(clock.now()).thenReturn(updatedAt);
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 componentName,
-                incomingPositionInStream)).thenReturn(streamPositions);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_CORRECTLY_ORDERED);
+                incomingPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_CORRECTLY_ORDERED);
 
         assertThat(streamStatusService.handleStreamStatusUpdates(incomingJsonEnvelope, componentName), is(EVENT_CORRECTLY_ORDERED));
 
@@ -117,13 +117,13 @@ public class StreamStatusServiceTest {
                 componentName,
                 updatedAt,
                 false);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 componentName,
                 incomingPositionInStream);
         inOrder.verify(latestKnownPositionAndIsUpToDateUpdater).updateIfNecessary(
-                streamPositions,
+                streamUpdateContext,
                 streamId,
                 source,
                 componentName);
@@ -146,7 +146,7 @@ public class StreamStatusServiceTest {
 
         final JsonEnvelope incomingJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
         when(incomingJsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.name()).thenReturn(name);
@@ -155,12 +155,12 @@ public class StreamStatusServiceTest {
         when(eventSourceNameCalculator.getSource(incomingJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(incomingPositionInStream));
         when(clock.now()).thenReturn(updatedAt);
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 componentName,
-                incomingPositionInStream)).thenReturn(streamPositions);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_OUT_OF_ORDER);
+                incomingPositionInStream)).thenReturn(streamUpdateContext);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_OUT_OF_ORDER);
 
         assertThat(streamStatusService.handleStreamStatusUpdates(incomingJsonEnvelope, componentName), is(EVENT_OUT_OF_ORDER));
 
@@ -177,13 +177,13 @@ public class StreamStatusServiceTest {
                 componentName,
                 updatedAt,
                 false);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 componentName,
                 incomingPositionInStream);
         inOrder.verify(latestKnownPositionAndIsUpToDateUpdater).updateIfNecessary(
-                streamPositions,
+                streamUpdateContext,
                 streamId,
                 source,
                 componentName);
@@ -207,7 +207,7 @@ public class StreamStatusServiceTest {
 
         final JsonEnvelope incomingJsonEnvelope = mock(JsonEnvelope.class);
         final Metadata metadata = mock(Metadata.class);
-        final StreamPositions streamPositions = mock(StreamPositions.class);
+        final StreamUpdateContext streamUpdateContext = mock(StreamUpdateContext.class);
 
         when(incomingJsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.name()).thenReturn(name);
@@ -216,14 +216,14 @@ public class StreamStatusServiceTest {
         when(eventSourceNameCalculator.getSource(incomingJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(incomingPositionInStream));
         when(clock.now()).thenReturn(updatedAt);
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
-                incomingPositionInStream)).thenReturn(streamPositions);
-        when(streamPositions.currentStreamPosition()).thenReturn(currentStreamPosition);
-        when(streamPositions.incomingEventPosition()).thenReturn(incomingPositionInStream);
-        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions)).thenReturn(EVENT_ALREADY_PROCESSED);
+                incomingPositionInStream)).thenReturn(streamUpdateContext);
+        when(streamUpdateContext.currentStreamPosition()).thenReturn(currentStreamPosition);
+        when(streamUpdateContext.incomingEventPosition()).thenReturn(incomingPositionInStream);
+        when(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext)).thenReturn(EVENT_ALREADY_PROCESSED);
 
         assertThat(streamStatusService.handleStreamStatusUpdates(incomingJsonEnvelope, component), is(EVENT_ALREADY_PROCESSED));
 
@@ -242,13 +242,13 @@ public class StreamStatusServiceTest {
                 component,
                 updatedAt,
                 false);
-        inOrder.verify(newStreamStatusRepository).lockRowAndGetPositions(
+        inOrder.verify(newStreamStatusRepository).lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 component,
                 incomingPositionInStream);
         inOrder.verify(latestKnownPositionAndIsUpToDateUpdater).updateIfNecessary(
-                streamPositions,
+                streamUpdateContext,
                 streamId,
                 source,
                 component);
@@ -281,7 +281,7 @@ public class StreamStatusServiceTest {
         when(eventSourceNameCalculator.getSource(incomingJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(incomingPositionInStream));
         when(clock.now()).thenReturn(updatedAt);
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 componentName,
@@ -326,7 +326,7 @@ public class StreamStatusServiceTest {
         when(eventSourceNameCalculator.getSource(incomingJsonEnvelope)).thenReturn(source);
         when(metadata.position()).thenReturn(of(incomingPositionInStream));
         when(clock.now()).thenReturn(updatedAt);
-        when(newStreamStatusRepository.lockRowAndGetPositions(
+        when(newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 componentName,
