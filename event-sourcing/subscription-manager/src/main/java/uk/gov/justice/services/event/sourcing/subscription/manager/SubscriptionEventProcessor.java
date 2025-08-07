@@ -10,7 +10,7 @@ import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProduce
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.event.buffer.core.repository.streambuffer.NewEventBufferRepository;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
-import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamStatusLockingException;
 import uk.gov.justice.services.event.sourcing.subscription.error.MissingPositionInStreamException;
 import uk.gov.justice.services.event.sourcing.subscription.error.StreamErrorRepository;
@@ -79,8 +79,8 @@ public class SubscriptionEventProcessor {
         try {
             transactionHandler.begin(userTransaction);
 
-            final StreamPositions streamPositions = newStreamStatusRepository.lockRowAndGetPositions(streamId, source, component, eventPositionInStream);
-            final EventOrderingStatus eventOrderingStatus = eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions);
+            final StreamUpdateContext streamUpdateContext = newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(streamId, source, component, eventPositionInStream);
+            final EventOrderingStatus eventOrderingStatus = eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext);
 
             final AtomicBoolean eventProcessed = new AtomicBoolean(false);
             if (eventOrderingStatus == EVENT_CORRECTLY_ORDERED) {
@@ -93,7 +93,7 @@ public class SubscriptionEventProcessor {
                 newEventBufferRepository.remove(streamId, source, component, eventPositionInStream);
                 streamErrorRepository.markStreamAsFixed(streamId, source, component);
 
-                if (streamPositions.latestKnownStreamPosition() == eventPositionInStream) {
+                if (streamUpdateContext.latestKnownStreamPosition() == eventPositionInStream) {
                     newStreamStatusRepository.setUpToDate(true, streamId, source, component);
                 }
 

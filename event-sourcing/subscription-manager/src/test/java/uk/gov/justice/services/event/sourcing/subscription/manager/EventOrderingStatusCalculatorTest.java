@@ -8,7 +8,7 @@ import static uk.gov.justice.services.event.sourcing.subscription.manager.EventO
 import static uk.gov.justice.services.event.sourcing.subscription.manager.EventOrderingStatus.EVENT_CORRECTLY_ORDERED;
 import static uk.gov.justice.services.event.sourcing.subscription.manager.EventOrderingStatus.EVENT_OUT_OF_ORDER;
 
-import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,54 +25,54 @@ public class EventOrderingStatusCalculatorTest {
     @Test
     public void shouldProcessEventIfIncomingPositionIsOneGreaterThanCurrentStreamPosition() throws Exception {
 
-        final StreamPositions streamPositions_1 = mock(StreamPositions.class);
-        when(streamPositions_1.currentStreamPosition()).thenReturn(1L);
-        when(streamPositions_1.incomingEventPosition()).thenReturn(2L);
+        final StreamUpdateContext streamUpdateContext_1 = mock(StreamUpdateContext.class);
+        when(streamUpdateContext_1.currentStreamPosition()).thenReturn(1L);
+        when(streamUpdateContext_1.incomingEventPosition()).thenReturn(2L);
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions_1), is(EVENT_CORRECTLY_ORDERED));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext_1), is(EVENT_CORRECTLY_ORDERED));
 
-        final StreamPositions streamPositions_2 = mock(StreamPositions.class);
-        when(streamPositions_2.currentStreamPosition()).thenReturn(2L);
-        when(streamPositions_2.incomingEventPosition()).thenReturn(3L);
+        final StreamUpdateContext streamUpdateContext_2 = mock(StreamUpdateContext.class);
+        when(streamUpdateContext_2.currentStreamPosition()).thenReturn(2L);
+        when(streamUpdateContext_2.incomingEventPosition()).thenReturn(3L);
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions_2), is(EVENT_CORRECTLY_ORDERED));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext_2), is(EVENT_CORRECTLY_ORDERED));
 
-        final StreamPositions streamPositions_3 = mock(StreamPositions.class);
-        when(streamPositions_3.currentStreamPosition()).thenReturn(23L);
-        when(streamPositions_3.incomingEventPosition()).thenReturn(24L);
+        final StreamUpdateContext streamUpdateContext_3 = mock(StreamUpdateContext.class);
+        when(streamUpdateContext_3.currentStreamPosition()).thenReturn(23L);
+        when(streamUpdateContext_3.incomingEventPosition()).thenReturn(24L);
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions_3), is(EVENT_CORRECTLY_ORDERED));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext_3), is(EVENT_CORRECTLY_ORDERED));
     }
 
     @Test
     public void shouldBufferEventIfIncomingPositionIsMoreThanOneGreaterThanCurrentStreamPosition() throws Exception {
 
-        final StreamPositions streamPositions_1 = mock(StreamPositions.class);
-        when(streamPositions_1.currentStreamPosition()).thenReturn(1L);
-        when(streamPositions_1.incomingEventPosition()).thenReturn(3L);
+        final StreamUpdateContext streamUpdateContext_1 = mock(StreamUpdateContext.class);
+        when(streamUpdateContext_1.currentStreamPosition()).thenReturn(1L);
+        when(streamUpdateContext_1.incomingEventPosition()).thenReturn(3L);
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions_1), is(EVENT_OUT_OF_ORDER));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext_1), is(EVENT_OUT_OF_ORDER));
 
-        final StreamPositions streamPositions_2 = mock(StreamPositions.class);
-        when(streamPositions_2.currentStreamPosition()).thenReturn(2L);
-        when(streamPositions_2.incomingEventPosition()).thenReturn(8L);
+        final StreamUpdateContext streamUpdateContext_2 = mock(StreamUpdateContext.class);
+        when(streamUpdateContext_2.currentStreamPosition()).thenReturn(2L);
+        when(streamUpdateContext_2.incomingEventPosition()).thenReturn(8L);
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions_2), is(EVENT_OUT_OF_ORDER));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext_2), is(EVENT_OUT_OF_ORDER));
     }
 
     @Test
     public void shouldIgnoreTheEventIfTheIncomingPositionIsLessThanOrEqualToTheCurrentStreamPosition() throws Exception {
 
-        final StreamPositions streamPositions_1 = mock(StreamPositions.class);
-        when(streamPositions_1.currentStreamPosition()).thenReturn(10L);
-        when(streamPositions_1.incomingEventPosition()).thenReturn(10L);
+        final StreamUpdateContext streamUpdateContext_1 = mock(StreamUpdateContext.class);
+        when(streamUpdateContext_1.currentStreamPosition()).thenReturn(10L);
+        when(streamUpdateContext_1.incomingEventPosition()).thenReturn(10L);
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions_1), is(EVENT_ALREADY_PROCESSED));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext_1), is(EVENT_ALREADY_PROCESSED));
 
-        final StreamPositions streamPositions_2 = mock(StreamPositions.class);
-        when(streamPositions_2.currentStreamPosition()).thenReturn(12L);
-        when(streamPositions_2.incomingEventPosition()).thenReturn(11L);
+        final StreamUpdateContext streamUpdateContext_2 = mock(StreamUpdateContext.class);
+        when(streamUpdateContext_2.currentStreamPosition()).thenReturn(12L);
+        when(streamUpdateContext_2.incomingEventPosition()).thenReturn(11L);
 
-        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamPositions_2), is(EVENT_ALREADY_PROCESSED));
+        assertThat(eventProcessingStatusCalculator.calculateEventOrderingStatus(streamUpdateContext_2), is(EVENT_ALREADY_PROCESSED));
     }
 }

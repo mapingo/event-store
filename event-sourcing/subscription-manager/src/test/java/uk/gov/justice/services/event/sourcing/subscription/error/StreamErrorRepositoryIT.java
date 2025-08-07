@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
+
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,9 @@ import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamEr
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorHashRowMapper;
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamErrorPersistence;
 import uk.gov.justice.services.event.buffer.core.repository.streamerror.StreamStatusErrorPersistence;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRepository;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.NewStreamStatusRowMapper;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
@@ -51,6 +55,7 @@ public class StreamErrorRepositoryIT {
 
     @Spy
     private StreamErrorDetailsRowMapper streamErrorDetailsRowMapper;
+    
     @InjectMocks
     private StreamErrorDetailsPersistence streamErrorDetailsPersistence;
 
@@ -104,6 +109,30 @@ public class StreamErrorRepositoryIT {
         } else {
             fail();
         }
+    }
+
+    @Test
+    public void shouldReturnStreamErrorIdWhenLockingRowInStreamStatusIfErrorExistsOnThatStream() throws Exception {
+
+        final long streamErrorPosition = 234L;
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
+
+        final StreamError streamError = aStreamError(streamErrorPosition);
+        streamErrorRepository.markStreamAsErrored(streamError);
+
+        final NewStreamStatusRepository newStreamStatusRepository = new NewStreamStatusRepository();
+
+        setField(newStreamStatusRepository, "streamStatusRowMapper", new NewStreamStatusRowMapper());
+        setField(newStreamStatusRepository, "viewStoreJdbcDataSourceProvider", viewStoreJdbcDataSourceProvider);
+
+        final UUID streamId = streamError.streamErrorDetails().streamId();
+        final String source = streamError.streamErrorDetails().source();
+        final String componentName = streamError.streamErrorDetails().componentName();
+        final StreamUpdateContext streamUpdateContext = newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(streamId, source, componentName, 23);
+
+        assertThat(streamUpdateContext.streamErrorId(), is(of(streamError.streamErrorDetails().id())));
+
     }
 
     @Test
