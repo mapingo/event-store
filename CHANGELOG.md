@@ -7,6 +7,7 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 ### Changed
 - `lockRowAndGetPositions(...)` renamed to `lockStreamAndGetStreamUpdateContext(...)`
 - `lockStreamAndGetStreamUpdateContext(...)` on stream_status table now returns an Optional `streamErrorId`
+- Delete of stream errors sql no longer cascades to delete any orphaned hashes. Instead, orphaned hashes are found and deleted if necessary 
 ### Added
 - New index 'stream_error.hash.idx' on stream_error.hash column
 

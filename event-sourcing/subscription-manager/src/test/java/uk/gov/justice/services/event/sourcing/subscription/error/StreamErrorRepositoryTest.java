@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -50,7 +51,7 @@ public class StreamErrorRepositoryTest {
     private StreamErrorRepository streamErrorRepository;
 
     @Test
-    public void shouldSaveStreamErrorAndHash() throws Exception {
+    public void shouldMarkStreamAsErrored() throws Exception {
 
         final UUID streamErrorId = randomUUID();
         final UUID streamId = randomUUID();
@@ -133,6 +134,7 @@ public class StreamErrorRepositoryTest {
     public void shouldMarkStreamAsFixed() throws Exception {
 
         final UUID streamId = randomUUID();
+        final UUID streamErrorId = randomUUID();
         final String componentName = "SOME_COMPONENT";
         final String source = "some-source";
 
@@ -142,11 +144,11 @@ public class StreamErrorRepositoryTest {
         when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(viewStoreDataSource);
         when(viewStoreDataSource.getConnection()).thenReturn(connection);
 
-        streamErrorRepository.markStreamAsFixed(streamId, source, componentName);
+        streamErrorRepository.markStreamAsFixed(streamErrorId, streamId, source, componentName);
 
         final InOrder inOrder = inOrder(streamStatusErrorPersistence, streamErrorPersistence, connection);
         inOrder.verify(streamStatusErrorPersistence).unmarkStreamStatusAsErrored(streamId, source, componentName, connection);
-        inOrder.verify(streamErrorPersistence).removeErrorForStream(streamId, source, componentName, connection);
+        inOrder.verify(streamErrorPersistence).removeErrorForStream(streamErrorId, streamId, source, componentName, connection);
         inOrder.verify(connection).close();
     }
 
@@ -154,6 +156,7 @@ public class StreamErrorRepositoryTest {
     public void shouldThrowStreamErrorHandlingExceptionIfGettingConnectionFailsWhenMarkingStreamAsFixed() throws Exception {
 
         final UUID streamId = randomUUID();
+        final UUID streamErrorId = randomUUID();
         final String componentName = "SOME_COMPONENT";
         final String source = "some-source";
         final SQLException sqlException = new SQLException("Ooops");
@@ -165,7 +168,7 @@ public class StreamErrorRepositoryTest {
 
         final StreamErrorHandlingException streamErrorHandlingException = assertThrows(
                 StreamErrorHandlingException.class,
-                () -> streamErrorRepository.markStreamAsFixed(streamId, source, componentName));
+                () -> streamErrorRepository.markStreamAsFixed(streamErrorId, streamId, source, componentName));
 
         assertThat(streamErrorHandlingException.getCause(), is(sqlException));
         assertThat(streamErrorHandlingException.getMessage(), is("Failed to get connection to view-store"));

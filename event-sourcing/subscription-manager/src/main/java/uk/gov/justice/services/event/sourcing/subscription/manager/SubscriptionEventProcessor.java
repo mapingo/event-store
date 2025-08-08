@@ -1,5 +1,6 @@
 package uk.gov.justice.services.event.sourcing.subscription.manager;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
@@ -92,9 +93,9 @@ public class SubscriptionEventProcessor {
                 newStreamStatusRepository.updateCurrentPosition(streamId, source, component, eventPositionInStream);
                 newEventBufferRepository.remove(streamId, source, component, eventPositionInStream);
 
-                if (streamUpdateContext.streamCurrentlyErrored()) {
-                    streamErrorRepository.markStreamAsFixed(streamId, source, component);
-                }
+                streamUpdateContext.streamErrorId().ifPresent(
+                        streamErrorId ->
+                                streamErrorRepository.markStreamAsFixed(streamErrorId, streamId, source, component));
 
                 if (streamUpdateContext.latestKnownStreamPosition() == eventPositionInStream) {
                     newStreamStatusRepository.setUpToDate(true, streamId, source, component);
