@@ -126,9 +126,4 @@ public class StreamStatusErrorPersistenceTest {
         verify(resultSet).close();
         verify(connection, never()).close();
     }
-
-    @Test
-    public void shouldTestAllOtherMethodsInIntegrationTest() throws Exception {
-        assertTrue(true, "Test all other methods in integration test '" + StreamErrorPersistenceIT.class.getSimpleName() + "'");
-    }
 }

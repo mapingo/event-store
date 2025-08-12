@@ -1,5 +1,6 @@
 package uk.gov.justice.services.event.buffer.core.repository.streamerror;
 
+import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
@@ -71,7 +72,6 @@ public class StreamErrorDetailsPersistence {
             FROM stream_error
             WHERE stream_id = ?
             """;
-
     private static final String FIND_ALL_SQL = """
             SELECT
                 id,
@@ -88,8 +88,14 @@ public class StreamErrorDetailsPersistence {
                 source
             FROM stream_error
             """;
-
-    private static final String DELETE_SQL = "DELETE FROM stream_error WHERE stream_id = ? AND source = ? AND component = ?";
+    private static final String DELETE_AND_RETURN_HASH_SQL = """
+            DELETE FROM stream_error WHERE id = ? RETURNING hash
+            """;
+    private static final String ERRORS_EXIST_FOR_HASH_SQL = """
+        SELECT 1
+        FROM stream_error
+        WHERE hash = ?
+        """;
 
 
     public int insert(final StreamErrorDetails streamErrorDetails, final Connection connection) throws SQLException {
@@ -239,13 +245,28 @@ public class StreamErrorDetailsPersistence {
         }
     }
 
-    public void deleteBy(final UUID streamId, final String source, final String componentName, final Connection connection) throws SQLException {
+    public String deleteErrorAndGetHash(final UUID streamErrorId, final Connection connection) throws SQLException {
 
-        try (final PreparedStatement preparedStatement = connection.prepareStatement(DELETE_SQL)) {
-            preparedStatement.setObject(1, streamId);
-            preparedStatement.setString(2, source);
-            preparedStatement.setString(3, componentName);
-            preparedStatement.executeUpdate();
+        try(final PreparedStatement preparedStatement = connection.prepareStatement(DELETE_AND_RETURN_HASH_SQL)) {
+            preparedStatement.setObject(1, streamErrorId);
+            try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("hash");
+                } else {
+                    // hash is non-nullable so this should never happen
+                    throw new StreamErrorHandlingException(format("No hash found for id '%s'", streamErrorId));
+                }
+            }
+        }
+    }
+
+    public boolean noErrorsExistFor(final String hash, final Connection connection) throws SQLException {
+
+        try(final PreparedStatement preparedStatement = connection.prepareStatement(ERRORS_EXIST_FOR_HASH_SQL)) {
+            preparedStatement.setString(1, hash);
+            try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+                return ! resultSet.next();
+            }
         }
     }
 }

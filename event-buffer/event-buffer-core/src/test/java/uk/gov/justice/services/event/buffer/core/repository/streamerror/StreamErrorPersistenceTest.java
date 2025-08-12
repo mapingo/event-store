@@ -185,17 +185,40 @@ public class StreamErrorPersistenceTest {
     public void shouldRemoveErrorForStream() throws Exception {
 
         final UUID streamId = randomUUID();
+        final UUID streamErrorId = randomUUID();
         final String source = "some-source";
         final String componentName = "some-component";
+        final String hash = "some-hash";
 
         final Connection connection = mock(Connection.class);
 
-        streamErrorPersistence.removeErrorForStream(streamId, source, componentName, connection);
+        when(streamErrorDetailsPersistence.deleteErrorAndGetHash(streamErrorId, connection)).thenReturn(hash);
+        when(streamErrorDetailsPersistence.noErrorsExistFor(hash, connection)).thenReturn(false);
 
-        final InOrder inOrder = inOrder(streamErrorDetailsPersistence, streamErrorHashPersistence, connection);
+        streamErrorPersistence.removeErrorForStream(streamErrorId, streamId, source, componentName, connection);
 
-        inOrder.verify(streamErrorDetailsPersistence).deleteBy(streamId, source, componentName, connection);
-        inOrder.verify(streamErrorHashPersistence).deleteOrphanedHashes(connection);
+        verify(connection, never()).close();
+        verify(streamErrorHashPersistence, never()).deleteHash(hash, connection);
+    }
+
+    @Test
+    public void shouldAlsoRemoveHashWhenRemovingErrorForStreamIfNoErrorsExistWithThatHash() throws Exception {
+
+        final UUID streamId = randomUUID();
+        final UUID streamErrorId = randomUUID();
+        final String source = "some-source";
+        final String componentName = "some-component";
+        final String hash = "some-hash";
+
+        final Connection connection = mock(Connection.class);
+
+        when(streamErrorDetailsPersistence.deleteErrorAndGetHash(streamErrorId, connection)).thenReturn(hash);
+        when(streamErrorDetailsPersistence.noErrorsExistFor(hash, connection)).thenReturn(true);
+
+        streamErrorPersistence.removeErrorForStream(streamErrorId, streamId, source, componentName, connection);
+
+        verify(streamErrorHashPersistence).deleteHash(hash, connection);
+
         verify(connection, never()).close();
     }
 
@@ -204,16 +227,19 @@ public class StreamErrorPersistenceTest {
 
         final SQLException sqlException = new SQLException("Bunnies");
         final UUID streamId = fromString("ad6b76f1-96b7-423b-a2d0-4a922236c2ad");
+        final UUID streamErrorId = randomUUID();
         final String source = "some-source";
         final String componentName = "some-component";
+        final String hash = "some-hash";
 
         final Connection connection = mock(Connection.class);
 
-        doThrow(sqlException).when(streamErrorHashPersistence).deleteOrphanedHashes(connection);
+        when(streamErrorDetailsPersistence.deleteErrorAndGetHash(streamErrorId, connection)).thenReturn(hash);
+        doThrow(sqlException).when(streamErrorDetailsPersistence).noErrorsExistFor(hash, connection);
 
         final StreamErrorHandlingException streamErrorHandlingException = assertThrows(
                 StreamErrorHandlingException.class,
-                () -> streamErrorPersistence.removeErrorForStream(streamId, source, componentName, connection));
+                () -> streamErrorPersistence.removeErrorForStream(streamErrorId, streamId, source, componentName, connection));
 
         assertThat(streamErrorHandlingException.getCause(), is(sqlException));
         assertThat(streamErrorHandlingException.getMessage(), is("Failed to remove error for stream. streamId: 'ad6b76f1-96b7-423b-a2d0-4a922236c2ad', source: 'some-source, component: 'some-component'"));
@@ -264,6 +290,8 @@ public class StreamErrorPersistenceTest {
 
         assertThat(streamErrorHandlingException.getCause(), is(sqlException));
         assertThat(streamErrorHandlingException.getMessage(), is("Failed find List of StreamErrors by streamId: '30b0c79b-af2f-4826-a63f-503e27c8d932'"));
+
+        verify(connection, never()).close();
     }
 
     @Test

@@ -80,7 +80,26 @@ public class StreamErrorHashPersistenceIT {
             assertThat(streamErrorHashPersistence.upsert(streamErrorHash, connection), is(0));
 
         }
+    }
 
+    @Test
+    public void shouldDeleteByHash() throws Exception {
+
+        final StreamErrorHash streamErrorHash = aStreamErrorHash();
+
+        final DataSource viewStoreDataSource = testJdbcDataSourceProvider.getViewStoreDataSource("framework");
+
+        try(final Connection connection = viewStoreDataSource.getConnection()) {
+            streamErrorHashPersistence.upsert(streamErrorHash, connection);
+            final Optional<StreamErrorHash> optionalStreamErrorHash = streamErrorHashPersistence.findByHash(streamErrorHash.hash(), connection);
+            assertThat(optionalStreamErrorHash.isPresent(), is(true));
+        }
+
+        try(final Connection connection = viewStoreDataSource.getConnection()) {
+            streamErrorHashPersistence.deleteHash(streamErrorHash.hash(), connection);
+            final Optional<StreamErrorHash> optionalStreamErrorHash = streamErrorHashPersistence.findByHash(streamErrorHash.hash(), connection);
+            assertThat(optionalStreamErrorHash.isPresent(), is(false));
+        }
     }
 
     private StreamErrorHash aStreamErrorHash() {

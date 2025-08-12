@@ -168,40 +168,21 @@ public class StreamErrorDetailsPersistenceIT {
     }
 
     @Test
-    public void shouldDeleteStreamErrorPlusAnyOrphanedHashes() throws Exception {
-
-        final String hash = "this-is-the-hash";
-        final UUID streamId_1 = fromString("ac2ba380-548a-445d-b6a9-56e785bd26ff");
-        final UUID streamId_2 = fromString("e2de717c-9bf4-432b-ab0e-4e4e0484f35e");
-
-        final StreamErrorDetails streamErrorDetails_1 = new StreamErrorDetails(
+    public void shouldDeleteStreamErrorByIdAndReturnItsHash() throws Exception {
+        final String hash = "sdlksdljfsdlf87236662846";
+        final StreamErrorDetails streamErrorDetails = new StreamErrorDetails(
                 randomUUID(),
                 hash,
-                "some-exception-message-1",
-                of("cause-message-1"),
-                "event-name-1",
+                "some-exception-message",
+                of("cause-message"),
+                "event-name",
                 randomUUID(),
-                streamId_1,
-                111L,
+                randomUUID(),
+                23423L,
                 new UtcClock().now(),
-                "stack-trace-1",
-                "component-name-1",
-                "source-1"
-        );
-
-        final StreamErrorDetails streamErrorDetails_2 = new StreamErrorDetails(
-                randomUUID(),
-                hash,
-                "some-exception-message-2",
-                of("cause-message-2"),
-                "event-name-2",
-                randomUUID(),
-                streamId_2,
-                22222L,
-                new UtcClock().now(),
-                "stack-trace-2",
-                "component-name-2",
-                "source-2"
+                "stack-trace",
+                "component-name",
+                "source"
         );
 
         final StreamErrorHash streamErrorHash = new StreamErrorHash(
@@ -215,70 +196,71 @@ public class StreamErrorDetailsPersistenceIT {
 
         final DataSource viewStoreDataSource = testJdbcDataSourceProvider.getViewStoreDataSource("framework");
 
-        // save some errors with their hash
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-
-            // should only save one row regardless of how many times we call it
             streamErrorHashPersistence.upsert(streamErrorHash, connection);
-            streamErrorHashPersistence.upsert(streamErrorHash, connection);
-            streamErrorHashPersistence.upsert(streamErrorHash, connection);
-
-            streamErrorDetailsPersistence.insert(streamErrorDetails_1, connection);
-            streamErrorDetailsPersistence.insert(streamErrorDetails_2, connection);
-
+            streamErrorDetailsPersistence.insert(streamErrorDetails, connection);
         }
 
-        // make sure they saved correctly
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-            final List<StreamErrorDetails> streamErrorDetails = streamErrorDetailsPersistence.findAll(connection);
-            assertThat(streamErrorDetails.size(), is(2));
-            assertThat(streamErrorDetails, hasItems(streamErrorDetails_1, streamErrorDetails_2));
+            final List<StreamErrorDetails> allStreamErrorDetails = streamErrorDetailsPersistence.findAll(connection);
 
-            final List<StreamErrorHash> streamErrorHashes = streamErrorHashPersistence.findAll(connection);
-            assertThat(streamErrorHashes.size(), is(1));
-            assertThat(streamErrorHashes, hasItem(streamErrorHash));
+            assertThat(allStreamErrorDetails.size(), is(1));
         }
 
-        // delete one error
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-
-            streamErrorDetailsPersistence.deleteBy(
-                    streamErrorDetails_1.streamId(),
-                    streamErrorDetails_1.source(),
-                    streamErrorDetails_1.componentName(),
+            final String returnedHash = streamErrorDetailsPersistence.deleteErrorAndGetHash(
+                    streamErrorDetails.id(),
                     connection);
-            streamErrorHashPersistence.deleteOrphanedHashes(connection);
+
+            assertThat(returnedHash, is(hash));
         }
 
-        // make sure we still have the second error plus the hash
         try (final Connection connection = viewStoreDataSource.getConnection()) {
-            final List<StreamErrorDetails> streamErrorDetails = streamErrorDetailsPersistence.findAll(connection);
-            assertThat(streamErrorDetails.size(), is(1));
-            assertThat(streamErrorDetails, hasItem(streamErrorDetails_2));
+            final List<StreamErrorDetails> allStreamErrorDetails = streamErrorDetailsPersistence.findAll(connection);
+            assertThat(allStreamErrorDetails.size(), is(0));
+        }
+    }
 
-            final List<StreamErrorHash> streamErrorHashes = streamErrorHashPersistence.findAll(connection);
-            assertThat(streamErrorHashes.size(), is(1));
-            assertThat(streamErrorHashes, hasItem(streamErrorHash));
+    @Test
+    public void shouldCalculateIfAnyErrorsExistForGivenHash() throws Exception {
+        final String hash = "sdlksdljfsdlf872237jkjshd2846";
+
+        final DataSource viewStoreDataSource = testJdbcDataSourceProvider.getViewStoreDataSource("framework");
+        try(final Connection connection = viewStoreDataSource.getConnection()) {
+            assertThat(streamErrorDetailsPersistence.noErrorsExistFor(hash, connection), is(true));
         }
 
-        // delete the second error
-        try (final Connection connection = viewStoreDataSource.getConnection()) {
+        final StreamErrorDetails streamErrorDetails = new StreamErrorDetails(
+                randomUUID(),
+                hash,
+                "some-exception-message",
+                of("cause-message"),
+                "event-name",
+                randomUUID(),
+                randomUUID(),
+                23423L,
+                new UtcClock().now(),
+                "stack-trace",
+                "component-name",
+                "source"
+        );
 
-            streamErrorDetailsPersistence.deleteBy(
-                    streamErrorDetails_2.streamId(),
-                    streamErrorDetails_2.source(),
-                    streamErrorDetails_2.componentName(),
-                    connection);
-            streamErrorHashPersistence.deleteOrphanedHashes(connection);
+        final StreamErrorHash streamErrorHash = new StreamErrorHash(
+                hash,
+                "some-exception-class-name",
+                of("some-cause-class-name"),
+                "java-class-name",
+                "java-method",
+                213
+        );
+
+        try (final Connection connection = viewStoreDataSource.getConnection()) {
+            streamErrorHashPersistence.upsert(streamErrorHash, connection);
+            streamErrorDetailsPersistence.insert(streamErrorDetails, connection);
         }
 
-        // now both the error and the has should have gone
-        try (final Connection connection = viewStoreDataSource.getConnection()) {
-            final List<StreamErrorDetails> streamErrorDetails = streamErrorDetailsPersistence.findAll(connection);
-            assertThat(streamErrorDetails.isEmpty(), is(true));
-
-            final List<StreamErrorHash> streamErrorHashes = streamErrorHashPersistence.findAll(connection);
-            assertThat(streamErrorHashes.isEmpty(), is(true));
+        try(final Connection connection = viewStoreDataSource.getConnection()) {
+            assertThat(streamErrorDetailsPersistence.noErrorsExistFor(hash, connection), is(false));
         }
     }
 }

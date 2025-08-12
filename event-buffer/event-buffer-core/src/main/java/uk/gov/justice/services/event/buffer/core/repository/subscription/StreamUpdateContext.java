@@ -8,8 +8,4 @@ public record StreamUpdateContext(
         long currentStreamPosition,
         long latestKnownStreamPosition,
         Optional<UUID> streamErrorId) {
-
-    public boolean streamCurrentlyErrored() {
-        return streamErrorId.isPresent();
-    }
 }

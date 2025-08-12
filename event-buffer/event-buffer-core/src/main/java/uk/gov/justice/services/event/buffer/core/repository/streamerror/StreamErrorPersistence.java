@@ -33,7 +33,7 @@ public class StreamErrorPersistence {
     }
 
     public Optional<StreamError> findByErrorId(final UUID streamErrorId, final Connection connection) {
-        try  {
+        try {
             final Optional<StreamErrorDetails> streamErrorDetailsOptional = streamErrorDetailsPersistence.findById(streamErrorId, connection);
 
             if (streamErrorDetailsOptional.isPresent()) {
@@ -53,10 +53,10 @@ public class StreamErrorPersistence {
     }
 
     public List<StreamError> findAllByStreamId(final UUID streamId, final Connection connection) {
-        try  {
+        try {
             final List<StreamError> streamErrors = new ArrayList<>();
             final List<StreamErrorDetails> streamErrorDetailsList = streamErrorDetailsPersistence.findByStreamId(streamId, connection);
-            for(final StreamErrorDetails streamErrorDetails: streamErrorDetailsList) {
+            for (final StreamErrorDetails streamErrorDetails : streamErrorDetailsList) {
                 final Optional<StreamErrorHash> streamErrorHashOptional = streamErrorHashPersistence.findByHash(streamErrorDetails.hash(), connection);
                 if (streamErrorHashOptional.isPresent()) {
                     streamErrors.add(new StreamError(streamErrorDetails, streamErrorHashOptional.get()));
@@ -72,11 +72,13 @@ public class StreamErrorPersistence {
         }
     }
 
-    public void removeErrorForStream(final UUID streamId, final String source, final String componentName, final Connection connection) {
+    public void removeErrorForStream(final UUID streamErrorId, final UUID streamId, final String source, final String componentName, final Connection connection) {
 
         try {
-            streamErrorDetailsPersistence.deleteBy(streamId, source, componentName, connection);
-            streamErrorHashPersistence.deleteOrphanedHashes(connection);
+            final String hash = streamErrorDetailsPersistence.deleteErrorAndGetHash(streamErrorId, connection);
+            if (streamErrorDetailsPersistence.noErrorsExistFor(hash, connection)) {
+                streamErrorHashPersistence.deleteHash(hash, connection);
+            }
         } catch (final SQLException e) {
             throw new StreamErrorHandlingException(format(
                     "Failed to remove error for stream. streamId: '%s', source: '%s, component: '%s'",

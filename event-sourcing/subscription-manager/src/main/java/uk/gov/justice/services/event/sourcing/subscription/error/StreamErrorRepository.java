@@ -57,11 +57,11 @@ public class StreamErrorRepository {
     }
 
     @Transactional(MANDATORY)
-    public void markStreamAsFixed(final UUID streamId, final String source, final String componentName) {
+    public void markStreamAsFixed(final UUID streamErrorId, final UUID streamId, final String source, final String componentName) {
 
         try (final Connection connection = viewStoreJdbcDataSourceProvider.getDataSource().getConnection()) {
             streamStatusErrorPersistence.unmarkStreamStatusAsErrored(streamId, source, componentName, connection);
-            streamErrorPersistence.removeErrorForStream(streamId, source, componentName, connection);
+            streamErrorPersistence.removeErrorForStream(streamErrorId, streamId, source, componentName, connection);
         } catch (final SQLException e) {
             throw new StreamErrorHandlingException("Failed to get connection to view-store", e);
         }
