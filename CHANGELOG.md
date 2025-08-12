@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+
+# [17.103.1-M3] - 2025-08-04
 ### Changed
 - `lockRowAndGetPositions(...)` renamed to `lockStreamAndGetStreamUpdateContext(...)`
 - `lockStreamAndGetStreamUpdateContext(...)` on stream_status table now returns an Optional `streamErrorId`
