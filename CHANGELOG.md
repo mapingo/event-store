@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+
+# [17.103.1-M4] - 2025-08-13
 ### Changed
 - `onStreamProcessingFailure(...)` now
   - Check the new error is same as previous error before to avoid updating stream_error tables.
