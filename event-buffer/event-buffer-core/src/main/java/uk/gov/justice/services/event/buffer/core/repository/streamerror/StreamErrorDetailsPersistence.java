@@ -95,6 +95,7 @@ public class StreamErrorDetailsPersistence {
         SELECT 1
         FROM stream_error
         WHERE hash = ?
+        LIMIT 1
         """;
 
 
