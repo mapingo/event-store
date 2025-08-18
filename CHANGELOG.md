@@ -9,29 +9,18 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 - Add limit 1 to ERRORS_EXIST_FOR_HASH_SQL
 - Temporarily disable coveralls whilst its site is down
 
-# [17.103.1-M4] - 2025-08-13
+# [17.103.1] - 2025-08-18
 ### Changed
-- `onStreamProcessingFailure(...)` now
-  - Check the new error is same as previous error before to avoid updating stream_error tables.
-  - If the error is different, now locks stream_status and updates error details.
-  - If the error is same, `markSameErrorHappened(...)` only updates stream_status.updated_at. 
-
-# [17.103.1-M3] - 2025-08-04
-### Changed
-- `lockRowAndGetPositions(...)` renamed to `lockStreamAndGetStreamUpdateContext(...)`
-- `lockStreamAndGetStreamUpdateContext(...)` on stream_status table now returns an Optional `streamErrorId`
-- Delete of stream errors sql no longer cascades to delete any orphaned hashes. Instead, orphaned hashes are found and deleted if necessary 
+- Refactoring of error handling to make database access more efficient. These include:
+  - Delete of stream errors sql no longer cascades to delete any orphaned hashes. Instead, orphaned hashes are found and deleted if necessary 
+  - Locking of stream_status table when publishing events, no longer calls error tables updates on locking errors
+  - Streams no longer marked as fixed by default and will only mark as fixed if stream previously broken 
+  - We now check that any new error not a repeat of a previous error before updating stream_error tables.
+    - If the error is different, we now lock stream_status and updates error details.
+    - If the error is same, `markSameErrorHappened(...)` only updates stream_status.updated_at. 
+  - We now execute the lock of steam_status table before calculating stream statistics
 ### Added
 - New index 'stream_error.hash.idx' on stream_error.hash column
-
-# [17.103.1-M2] - 2025-08-04
-### Changed
-- Locking of stream_status table when publishing events, no longer calls error tables updates on locking errors
-- Streams no longer marked as fixed by default and will only mark as fixed if stream previously broken 
-
-# [17.103.1-M1] - 2025-07-22
-### Added
-- Execute lock statement before calculating stream statistics
 
 # [17.103.0] - 2025-07-16
 ### Added
