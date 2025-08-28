@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
 import uk.gov.justice.services.eventstore.management.commands.EventCatchupCommand;
 import uk.gov.justice.services.eventstore.management.events.catchup.CatchupProcessingOfEventFailedEvent;
@@ -52,15 +52,15 @@ public class EventProcessingFailedHandlerTest {
         final UUID streamId = fromString("b1834ed9-e084-41c7-ae7f-74f1227cc829");
         final CatchupCommand catchupCommand = new EventCatchupCommand();
 
-        final PublishedEvent publishedEvent = mock(PublishedEvent.class);
+        final LinkedEvent linkedEvent = mock(LinkedEvent.class);
 
-        when(publishedEvent.getName()).thenReturn(eventName);
-        when(publishedEvent.getId()).thenReturn(eventId);
-        when(publishedEvent.getStreamId()).thenReturn(streamId);
+        when(linkedEvent.getName()).thenReturn(eventName);
+        when(linkedEvent.getId()).thenReturn(eventId);
+        when(linkedEvent.getStreamId()).thenReturn(streamId);
 
         eventProcessingFailedHandler.handleEventFailure(
                 nullPointerException,
-                publishedEvent,
+                linkedEvent,
                 subscriptionName,
                 catchupCommand,
                 commandId);
@@ -88,7 +88,7 @@ public class EventProcessingFailedHandlerTest {
         final UUID streamId = fromString("b1834ed9-e084-41c7-ae7f-74f1227cc829");
         final CatchupCommand catchupCommand = new EventCatchupCommand();
 
-        final PublishedEvent publishedEvent = mock(PublishedEvent.class);
+        final LinkedEvent linkedEvent = mock(LinkedEvent.class);
 
         eventProcessingFailedHandler.handleStreamFailure(
                 nullPointerException,

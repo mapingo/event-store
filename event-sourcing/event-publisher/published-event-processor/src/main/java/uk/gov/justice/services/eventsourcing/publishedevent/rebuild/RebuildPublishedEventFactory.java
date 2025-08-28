@@ -1,7 +1,7 @@
 package uk.gov.justice.services.eventsourcing.publishedevent.rebuild;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -15,15 +15,15 @@ public class RebuildPublishedEventFactory {
     @Inject
     private PublishedEventConverter publishedEventConverter;
 
-    public PublishedEvent createPublishedEventFrom(final Event event, final AtomicLong previousEventNumber) {
+    public LinkedEvent createPublishedEventFrom(final Event event, final AtomicLong previousEventNumber) {
         final Long eventNumber = eventNumberGetter.eventNumberFrom(event);
 
-        final PublishedEvent publishedEvent = publishedEventConverter.toPublishedEvent(
+        final LinkedEvent linkedEvent = publishedEventConverter.toPublishedEvent(
                 event,
                 previousEventNumber.get());
 
         previousEventNumber.set(eventNumber);
 
-        return publishedEvent;
+        return linkedEvent;
     }
 }

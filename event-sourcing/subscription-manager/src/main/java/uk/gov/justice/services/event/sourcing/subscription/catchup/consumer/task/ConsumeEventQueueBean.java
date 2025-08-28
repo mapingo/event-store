@@ -4,7 +4,7 @@ import static javax.ejb.TransactionManagementType.CONTAINER;
 import static javax.transaction.Transactional.TxType.NEVER;
 
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.EventStreamConsumptionResolver;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
 import uk.gov.justice.services.eventstore.management.events.catchup.CatchupProcessingOfEventFailedEvent;
 
@@ -38,7 +38,7 @@ public class ConsumeEventQueueBean {
 
     @Transactional(NEVER)
     public void consume(
-            final Queue<PublishedEvent> events,
+            final Queue<LinkedEvent> events,
             final String subscriptionName,
             final CatchupCommand catchupCommand,
             final UUID commandId) {

@@ -1,18 +1,18 @@
 package uk.gov.justice.services.eventsourcing.publishedevent.prepublish;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.messaging.Metadata;
 
 public class PublishedEventFactory {
 
-    public PublishedEvent create(
+    public LinkedEvent create(
             final Event event,
             final Metadata updatedMetadata,
             final long eventNumber,
             final Long previousEventNumber) {
 
-        return new PublishedEvent(
+        return new LinkedEvent(
                 event.getId(),
                 event.getStreamId(),
                 event.getPositionInStream(),

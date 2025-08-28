@@ -6,7 +6,7 @@ import static java.util.stream.IntStream.range;
 import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -26,14 +26,14 @@ public class EventFactory {
     private final UtcClock clock = new UtcClock();
 
     private final Random random = new Random();
-    private final Map<UUID, List<PublishedEvent>> eventsByStream = new HashMap<>();
+    private final Map<UUID, List<LinkedEvent>> eventsByStream = new HashMap<>();
 
     public EventFactory(final int numberOfStreams, final int numberOfUniqueEventNames) {
         this.numberOfStreams = numberOfStreams;
         this.numberOfUniqueEventNames = numberOfUniqueEventNames;
     }
 
-    public List<PublishedEvent> generateEvents(final int numberOfEventsToCreate) {
+    public List<LinkedEvent> generateEvents(final int numberOfEventsToCreate) {
 
         final List<UUID> streamIds = generateStreamIds();
         final List<String> eventNames = generateEventNames();
@@ -71,22 +71,22 @@ public class EventFactory {
         return eventNames.get(index);
     }
 
-    private PublishedEvent generateEnvelope(final List<UUID> streamIds, final List<String> eventNames, final int eventNumber) {
+    private LinkedEvent generateEnvelope(final List<UUID> streamIds, final List<String> eventNames, final int eventNumber) {
 
         final UUID streamId = getARandomStreamId(streamIds);
         final String eventName = getARandomEventName(eventNames);
 
-        final List<PublishedEvent> jsonEnvelopesByStream = eventsByStream.get(streamId);
+        final List<LinkedEvent> jsonEnvelopesByStream = eventsByStream.get(streamId);
         final int version = jsonEnvelopesByStream.size() + 1;
 
-        final PublishedEvent publishedEvent = generateJsonEnvelope(streamId, eventName, version, eventNumber);
+        final LinkedEvent linkedEvent = generateJsonEnvelope(streamId, eventName, version, eventNumber);
 
-        jsonEnvelopesByStream.add(publishedEvent);
+        jsonEnvelopesByStream.add(linkedEvent);
 
-        return publishedEvent;
+        return linkedEvent;
     }
 
-    private PublishedEvent generateJsonEnvelope(final UUID streamId, final String eventName, final long positionInStream, final long eventNumber) {
+    private LinkedEvent generateJsonEnvelope(final UUID streamId, final String eventName, final long positionInStream, final long eventNumber) {
         final UUID id = randomUUID();
         final Metadata metadata = JsonEnvelope.metadataBuilder()
                 .withId(id)
@@ -98,7 +98,7 @@ public class EventFactory {
 
         final String metadataJson = metadata.asJsonObject().toString();
 
-        return new PublishedEvent(
+        return new LinkedEvent(
                 id,
                 streamId,
                 positionInStream,

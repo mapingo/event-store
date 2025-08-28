@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -51,15 +51,15 @@ public class SingleEventValidatorTest {
 
         final JSONObject jsonObject = mock(JSONObject.class);
         final Schema schema = mock(Schema.class);
-        final PublishedEvent publishedEvent = mock(PublishedEvent.class);
+        final LinkedEvent linkedEvent = mock(LinkedEvent.class);
 
-        when(publishedEvent.getName()).thenReturn(eventName);
-        when(publishedEvent.getId()).thenReturn(eventId);
-        when(publishedEvent.getPayload()).thenReturn(payload);
+        when(linkedEvent.getName()).thenReturn(eventName);
+        when(linkedEvent.getId()).thenReturn(eventId);
+        when(linkedEvent.getPayload()).thenReturn(payload);
         when(jsonStringConverter.asJsonObject(payload)).thenReturn(jsonObject);
         when(schemaProvider.getForEvent(eventName)).thenReturn(schema);
 
-        assertThat(singleEventValidator.validate(publishedEvent), is(empty()));
+        assertThat(singleEventValidator.validate(linkedEvent), is(empty()));
 
         verify(schema).validate(jsonObject);
     }
@@ -75,11 +75,11 @@ public class SingleEventValidatorTest {
 
         final JSONObject jsonObject = mock(JSONObject.class);
         final Schema schema = mock(Schema.class);
-        final PublishedEvent publishedEvent = mock(PublishedEvent.class);
+        final LinkedEvent linkedEvent = mock(LinkedEvent.class);
 
-        when(publishedEvent.getName()).thenReturn(eventName);
-        when(publishedEvent.getId()).thenReturn(eventId);
-        when(publishedEvent.getPayload()).thenReturn(payload);
+        when(linkedEvent.getName()).thenReturn(eventName);
+        when(linkedEvent.getId()).thenReturn(eventId);
+        when(linkedEvent.getPayload()).thenReturn(payload);
         when(jsonStringConverter.asJsonObject(payload)).thenReturn(jsonObject);
         when(schemaProvider.getForEvent(eventName)).thenReturn(schema);
 
@@ -87,7 +87,7 @@ public class SingleEventValidatorTest {
 
         when(validationException.getAllMessages()).thenReturn(asList("error 1", "error 2"));
 
-        final Optional<ValidationError> validationError = singleEventValidator.validate(publishedEvent);
+        final Optional<ValidationError> validationError = singleEventValidator.validate(linkedEvent);
 
         if (validationError.isPresent()) {
             assertThat(validationError.get().getEventId(), is(eventId));

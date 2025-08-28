@@ -1,17 +1,19 @@
 package uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.util;
 
+import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.CatchupEventProcessor;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
+
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.apache.openejb.testing.Default;
-import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.CatchupEventProcessor;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
 
 @Default
 public class DummyCatchupEventProcessor implements CatchupEventProcessor {
 
     private static final int SLEEP_TIME = 10;
 
-    private final Queue<PublishedEvent> publishedEvents = new ConcurrentLinkedQueue<>();
+    private final Queue<LinkedEvent> linkedEvents = new ConcurrentLinkedQueue<>();
     private int expectedNumberOfEvents = 0;
 
     public void setExpectedNumberOfEvents(final int expectedNumberOfEvents) {
@@ -19,9 +21,9 @@ public class DummyCatchupEventProcessor implements CatchupEventProcessor {
     }
 
     @Override
-    public int processWithEventBuffer(final PublishedEvent event, final String subscriptionName) {
+    public int processWithEventBuffer(final LinkedEvent event, final String subscriptionName) {
 
-        publishedEvents.add(event);
+        linkedEvents.add(event);
 
         try {
             Thread.sleep(SLEEP_TIME);
@@ -32,11 +34,11 @@ public class DummyCatchupEventProcessor implements CatchupEventProcessor {
         return 1;
     }
 
-    public Queue<PublishedEvent> getPublishedEvents() {
-        return publishedEvents;
+    public Queue<LinkedEvent> getPublishedEvents() {
+        return linkedEvents;
     }
 
     public boolean isComplete() {
-        return publishedEvents.size() >= expectedNumberOfEvents;
+        return linkedEvents.size() >= expectedNumberOfEvents;
     }
 }

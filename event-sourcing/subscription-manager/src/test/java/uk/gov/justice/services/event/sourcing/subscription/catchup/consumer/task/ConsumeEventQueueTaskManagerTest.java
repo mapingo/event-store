@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
 import uk.gov.justice.services.eventstore.management.commands.EventCatchupCommand;
 
@@ -35,7 +35,7 @@ public class ConsumeEventQueueTaskManagerTest {
     @Test
     public void shouldAsynchronouslyRunConsumeEventQueue() throws Exception {
 
-        final Queue<PublishedEvent> events = mock(Queue.class);
+        final Queue<LinkedEvent> events = mock(Queue.class);
         final EventQueueConsumer eventQueueConsumer = mock(EventQueueConsumer.class);
         final String subscriptionName = "subscription name";
         final CatchupCommand catchupCommand = new EventCatchupCommand();

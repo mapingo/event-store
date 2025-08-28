@@ -64,7 +64,7 @@ public class MultipleDataSourcePublishedEventRepository {
      * @param eventNumber - exclusive start of events to return
      * @return a Stream of PublishedEvent
      */
-    public Stream<PublishedEvent> findEventsSince(final long eventNumber) {
+    public Stream<LinkedEvent> findEventsSince(final long eventNumber) {
 
         try {
             final PreparedStatementWrapper psWrapper = preparedStatementWrapperFactory.preparedStatementWrapperOf(dataSource, SQL_FIND_ALL_SINCE);
@@ -84,7 +84,7 @@ public class MultipleDataSourcePublishedEventRepository {
      * @param toEventNumber   - exclusive end of range of event numbers
      * @return a Stream of PublishedEvent
      */
-    public Stream<PublishedEvent> findEventRange(final long fromEventNumber, final long toEventNumber) {
+    public Stream<LinkedEvent> findEventRange(final long fromEventNumber, final long toEventNumber) {
 
         try {
             final PreparedStatementWrapper psWrapper = preparedStatementWrapperFactory.preparedStatementWrapperOf(dataSource, SQL_FIND_RANGE);
@@ -104,7 +104,7 @@ public class MultipleDataSourcePublishedEventRepository {
      * @param eventId - id of the event to fetch
      * @return Optional of PublishedEvent
      */
-    public Optional<PublishedEvent> findByEventId(final UUID eventId) {
+    public Optional<LinkedEvent> findByEventId(final UUID eventId) {
 
         try {
             final PreparedStatementWrapper psWrapper = preparedStatementWrapperFactory.preparedStatementWrapperOf(dataSource, SQL_FIND_BY_ID);
@@ -122,7 +122,7 @@ public class MultipleDataSourcePublishedEventRepository {
     }
 
     @SuppressWarnings("DuplicatedCode")
-    public Optional<PublishedEvent> getLatestPublishedEvent() {
+    public Optional<LinkedEvent> getLatestPublishedEvent() {
         try {
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_LATEST_PUBLISHED_EVENT)) {
@@ -140,7 +140,7 @@ public class MultipleDataSourcePublishedEventRepository {
                         final long eventNumber = resultSet.getLong("event_number");
                         final long previousEventNumber = resultSet.getLong("previous_event_number");
 
-                        return of(new PublishedEvent(
+                        return of(new LinkedEvent(
                                 id,
                                 streamId,
                                 positionInStream,
@@ -161,10 +161,10 @@ public class MultipleDataSourcePublishedEventRepository {
         }
     }
 
-    private Function<ResultSet, PublishedEvent> asPublishedEvent() {
+    private Function<ResultSet, LinkedEvent> asPublishedEvent() {
         return resultSet -> {
             try {
-                return new PublishedEvent((UUID) resultSet.getObject(ID),
+                return new LinkedEvent((UUID) resultSet.getObject(ID),
                         (UUID) resultSet.getObject(STREAM_ID),
                         resultSet.getLong(POSITION_IN_STREAM),
                         resultSet.getString(NAME),

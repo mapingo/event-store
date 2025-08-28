@@ -1,6 +1,6 @@
 package uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.task;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
 
 import java.util.Queue;
@@ -19,7 +19,7 @@ public class ConsumeEventQueueTaskManager {
     private ConsumeEventQueueTaskFactory consumeEventQueueTaskFactory;
 
     public void consume(
-            final Queue<PublishedEvent> events,
+            final Queue<LinkedEvent> events,
             final String subscriptionName,
             final CatchupCommand catchupCommand,
             final UUID commandId) {

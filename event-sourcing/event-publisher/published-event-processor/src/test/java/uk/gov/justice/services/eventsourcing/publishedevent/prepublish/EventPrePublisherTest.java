@@ -15,7 +15,7 @@ import uk.gov.justice.services.eventsourcing.publishedevent.jdbc.PrePublishRepos
 import uk.gov.justice.services.eventsourcing.publishedevent.jdbc.PublishedEventQueries;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventConverter;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.exception.PublishedEventException;
 import uk.gov.justice.services.eventsourcing.source.core.EventStoreDataSourceProvider;
 import uk.gov.justice.services.messaging.Metadata;
@@ -76,7 +76,7 @@ public class EventPrePublisherTest {
         final ZonedDateTime now = new UtcClock().now();
 
         final Event event = mock(Event.class);
-        final PublishedEvent publishedEvent = mock(PublishedEvent.class);
+        final LinkedEvent linkedEvent = mock(LinkedEvent.class);
         final DataSource dataSource = mock(DataSource.class);
 
         when(event.getId()).thenReturn(eventId);
@@ -90,12 +90,12 @@ public class EventPrePublisherTest {
                 originalMetadata,
                 previousEventNumber,
                 eventNumber)).thenReturn(updatedMetadata);
-        when(publishedEventFactory.create(event, updatedMetadata, eventNumber, previousEventNumber)).thenReturn(publishedEvent);
+        when(publishedEventFactory.create(event, updatedMetadata, eventNumber, previousEventNumber)).thenReturn(linkedEvent);
 
         eventPrePublisher.prePublish(event);
 
         final InOrder inOrder = inOrder(publishedEventQueries, prePublishRepository);
-        inOrder.verify(publishedEventQueries).insertPublishedEvent(publishedEvent, dataSource);
+        inOrder.verify(publishedEventQueries).insertPublishedEvent(linkedEvent, dataSource);
         inOrder.verify(prePublishRepository).addToPublishQueueTable(eventId, now, dataSource);
     }
 

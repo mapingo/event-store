@@ -11,7 +11,7 @@ import static uk.gov.justice.services.eventsourcing.publishedevent.jdbc.Publishe
 import static uk.gov.justice.services.eventsourcing.publishedevent.jdbc.PublishedEventStatements.TRUNCATE_PUBLISHED_EVENT;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MissingEventNumberException;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,26 +37,26 @@ public class PublishedEventQueries {
         }
     }
 
-    public void insertPublishedEvent(final PublishedEvent publishedEvent, final DataSource dataSource) throws SQLException {
+    public void insertPublishedEvent(final LinkedEvent linkedEvent, final DataSource dataSource) throws SQLException {
 
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO_PUBLISHED_EVENT_SQL)) {
-            preparedStatement.setObject(1, publishedEvent.getId());
-            preparedStatement.setObject(2, publishedEvent.getStreamId());
-            preparedStatement.setLong(3, publishedEvent.getPositionInStream());
-            preparedStatement.setString(4, publishedEvent.getName());
-            preparedStatement.setString(5, publishedEvent.getPayload());
-            preparedStatement.setString(6, publishedEvent.getMetadata());
-            preparedStatement.setObject(7, toSqlTimestamp(publishedEvent.getCreatedAt()));
-            preparedStatement.setLong(8, publishedEvent.getEventNumber().orElseThrow(() -> new MissingEventNumberException("Event with id '%s' does not have an event number")));
-            preparedStatement.setLong(9, publishedEvent.getPreviousEventNumber());
+            preparedStatement.setObject(1, linkedEvent.getId());
+            preparedStatement.setObject(2, linkedEvent.getStreamId());
+            preparedStatement.setLong(3, linkedEvent.getPositionInStream());
+            preparedStatement.setString(4, linkedEvent.getName());
+            preparedStatement.setString(5, linkedEvent.getPayload());
+            preparedStatement.setString(6, linkedEvent.getMetadata());
+            preparedStatement.setObject(7, toSqlTimestamp(linkedEvent.getCreatedAt()));
+            preparedStatement.setLong(8, linkedEvent.getEventNumber().orElseThrow(() -> new MissingEventNumberException("Event with id '%s' does not have an event number")));
+            preparedStatement.setLong(9, linkedEvent.getPreviousEventNumber());
 
             preparedStatement.execute();
         }
     }
 
     @SuppressWarnings("DuplicatedCode")
-    public Optional<PublishedEvent> getPublishedEvent(final UUID id, final DataSource dataSource) throws SQLException {
+    public Optional<LinkedEvent> getPublishedEvent(final UUID id, final DataSource dataSource) throws SQLException {
 
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(SELECT_FROM_PUBLISHED_EVENT_QUERY)) {
@@ -75,7 +75,7 @@ public class PublishedEventQueries {
                     final long eventNumber = resultSet.getLong("event_number");
                     final long previousEventNumber = resultSet.getLong("previous_event_number");
 
-                    return of(new PublishedEvent(
+                    return of(new LinkedEvent(
                             id,
                             streamId,
                             positionInStream,

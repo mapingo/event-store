@@ -7,7 +7,7 @@ import static uk.gov.justice.services.test.utils.events.EventBuilder.eventBuilde
 import static uk.gov.justice.services.test.utils.events.PublishedEventBuilder.publishedEventBuilder;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.test.utils.persistence.FrameworkTestDataSourceFactory;
 import uk.gov.justice.services.test.utils.persistence.TableCleaner;
 
@@ -135,32 +135,32 @@ public class EventStoreDataAccessIT {
 
         assertThat(eventStoreDataAccess.findAllPublishedEvents(), is(emptyList()));
 
-        final PublishedEvent publishedEvent_1 = publishedEventBuilder()
+        final LinkedEvent linkedEvent_1 = publishedEventBuilder()
                 .withName("published event 1")
                 .withPreviousEventNumber(0)
                 .withEventNumber(1)
                 .build();
-        final PublishedEvent publishedEvent_2 = publishedEventBuilder()
+        final LinkedEvent linkedEvent_2 = publishedEventBuilder()
                 .withName("published event 2")
                 .withPreviousEventNumber(1)
                 .withEventNumber(2)
                 .build();
-        final PublishedEvent publishedEvent_3 = publishedEventBuilder()
+        final LinkedEvent linkedEvent_3 = publishedEventBuilder()
                 .withName("published event 3")
                 .withPreviousEventNumber(2)
                 .withEventNumber(3)
                 .build();
 
-        eventStoreDataAccess.insertIntoPublishedEvent(publishedEvent_1);
-        eventStoreDataAccess.insertIntoPublishedEvent(publishedEvent_2);
-        eventStoreDataAccess.insertIntoPublishedEvent(publishedEvent_3);
+        eventStoreDataAccess.insertIntoPublishedEvent(linkedEvent_1);
+        eventStoreDataAccess.insertIntoPublishedEvent(linkedEvent_2);
+        eventStoreDataAccess.insertIntoPublishedEvent(linkedEvent_3);
 
-        final List<PublishedEvent> publishedEvents = eventStoreDataAccess.findAllPublishedEvents();
+        final List<LinkedEvent> linkedEvents = eventStoreDataAccess.findAllPublishedEvents();
 
-        assertThat(publishedEvents.size(), is(3));
-        assertThat(publishedEvents.get(0), is(publishedEvent_1));
-        assertThat(publishedEvents.get(1), is(publishedEvent_2));
-        assertThat(publishedEvents.get(2), is(publishedEvent_3));
+        assertThat(linkedEvents.size(), is(3));
+        assertThat(linkedEvents.get(0), is(linkedEvent_1));
+        assertThat(linkedEvents.get(1), is(linkedEvent_2));
+        assertThat(linkedEvents.get(2), is(linkedEvent_3));
     }
 
     @Test
@@ -170,31 +170,31 @@ public class EventStoreDataAccessIT {
 
         assertThat(eventStoreDataAccess.findAllPublishedEvents(), is(emptyList()));
 
-        final PublishedEvent publishedEvent_1 = publishedEventBuilder()
+        final LinkedEvent linkedEvent_1 = publishedEventBuilder()
                 .withName("published event 1")
                 .withPreviousEventNumber(0)
                 .withEventNumber(1)
                 .build();
-        final PublishedEvent publishedEvent_2 = publishedEventBuilder()
+        final LinkedEvent linkedEvent_2 = publishedEventBuilder()
                 .withName("published event 2")
                 .withPreviousEventNumber(1)
                 .withEventNumber(2)
                 .build();
-        final PublishedEvent publishedEvent_3 = publishedEventBuilder()
+        final LinkedEvent linkedEvent_3 = publishedEventBuilder()
                 .withName("published event 3")
                 .withPreviousEventNumber(2)
                 .withEventNumber(3)
                 .build();
 
-        eventStoreDataAccess.insertIntoPublishedEvent(publishedEvent_3);
-        eventStoreDataAccess.insertIntoPublishedEvent(publishedEvent_1);
-        eventStoreDataAccess.insertIntoPublishedEvent(publishedEvent_2);
+        eventStoreDataAccess.insertIntoPublishedEvent(linkedEvent_3);
+        eventStoreDataAccess.insertIntoPublishedEvent(linkedEvent_1);
+        eventStoreDataAccess.insertIntoPublishedEvent(linkedEvent_2);
 
-        final List<PublishedEvent> publishedEvents = eventStoreDataAccess.findAllPublishedEventsOrderedByEventNumber();
+        final List<LinkedEvent> linkedEvents = eventStoreDataAccess.findAllPublishedEventsOrderedByEventNumber();
 
-        assertThat(publishedEvents.size(), is(3));
-        assertThat(publishedEvents.get(0), is(publishedEvent_1));
-        assertThat(publishedEvents.get(1), is(publishedEvent_2));
-        assertThat(publishedEvents.get(2), is(publishedEvent_3));
+        assertThat(linkedEvents.size(), is(3));
+        assertThat(linkedEvents.get(0), is(linkedEvent_1));
+        assertThat(linkedEvents.get(1), is(linkedEvent_2));
+        assertThat(linkedEvents.get(2), is(linkedEvent_3));
     }
 }

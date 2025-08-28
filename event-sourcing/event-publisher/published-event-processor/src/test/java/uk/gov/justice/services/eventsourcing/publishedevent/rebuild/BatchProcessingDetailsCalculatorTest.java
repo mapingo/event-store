@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -44,11 +44,11 @@ public class BatchProcessingDetailsCalculatorTest {
                 20
         );
 
-        final PublishedEvent event_21 = mock(PublishedEvent.class);
-        final PublishedEvent event_22 = mock(PublishedEvent.class);
-        final PublishedEvent event_23 = mock(PublishedEvent.class);
+        final LinkedEvent event_21 = mock(LinkedEvent.class);
+        final LinkedEvent event_22 = mock(LinkedEvent.class);
+        final LinkedEvent event_23 = mock(LinkedEvent.class);
 
-        final List<PublishedEvent> publishedEvents = asList(event_21, event_22, event_23);
+        final List<LinkedEvent> linkedEvents = asList(event_21, event_22, event_23);
 
         final AtomicLong previousEventNumber = new AtomicLong(22L);
         final AtomicLong currentEventNumber = new AtomicLong(23L);
@@ -57,7 +57,7 @@ public class BatchProcessingDetailsCalculatorTest {
                 previousProcessDetails,
                 currentEventNumber,
                 previousEventNumber,
-                publishedEvents);
+                linkedEvents);
 
         assertThat(nextBatchProcessDetails.getProcessedInBatchCount(), is(3));
         assertThat(nextBatchProcessDetails.getProcessCount(), is(23));

@@ -5,7 +5,7 @@ import static java.lang.String.format;
 import uk.gov.justice.services.eventsourcing.publishedevent.prepublish.MetadataEventNumberUpdater;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventConverter;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.messaging.Metadata;
 
 import java.util.UUID;
@@ -20,7 +20,7 @@ public class PublishedEventConverter {
     @Inject
     private EventConverter eventConverter;
 
-    public PublishedEvent toPublishedEvent(final Event event, final long previousEventNumber) {
+    public LinkedEvent toPublishedEvent(final Event event, final long previousEventNumber) {
 
         final UUID eventId = event.getId();
         final Long eventNumber = event.getEventNumber()
@@ -31,7 +31,7 @@ public class PublishedEventConverter {
                 previousEventNumber,
                 eventNumber);
 
-        return new PublishedEvent(
+        return new LinkedEvent(
                 eventId,
                 event.getStreamId(),
                 event.getPositionInStream(),

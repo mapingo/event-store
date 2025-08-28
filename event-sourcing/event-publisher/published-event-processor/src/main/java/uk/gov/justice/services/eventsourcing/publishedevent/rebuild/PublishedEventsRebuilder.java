@@ -3,7 +3,7 @@ package uk.gov.justice.services.eventsourcing.publishedevent.rebuild;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.util.List;
 import java.util.Set;
@@ -28,14 +28,14 @@ public class PublishedEventsRebuilder {
     private RebuildPublishedEventFactory rebuildPublishedEventFactory;
 
     @SuppressWarnings("squid:S3864")
-    public List<PublishedEvent> rebuild(
+    public List<LinkedEvent> rebuild(
             final Stream<Event> eventStream,
             final AtomicLong previousEventNumber,
             final AtomicLong currentEventNumber,
             final Set<UUID> activeStreamIds) {
 
         try (final BatchedPublishedEventInserter batchedPublishedEventInserter = batchedPublishedEventInserterFactory.createInitialised()) {
-            final List<PublishedEvent> publishedEvents = eventStream
+            final List<LinkedEvent> linkedEvents = eventStream
                     .peek(event -> currentEventNumber.set(eventNumberGetter.eventNumberFrom(event)))
                     .filter(event -> activeEventFilter.isActiveEvent(event, activeStreamIds))
                     .map(event -> rebuildPublishedEventFactory.createPublishedEventFrom(event, previousEventNumber))
@@ -44,7 +44,7 @@ public class PublishedEventsRebuilder {
 
             batchedPublishedEventInserter.insertBatch();
 
-            return publishedEvents;
+            return linkedEvents;
         }
     }
 }
