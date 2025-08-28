@@ -15,15 +15,6 @@ import javax.inject.Inject;
 
 public class StreamErrorHashPersistence {
 
-    private static final String SELECT_CLAUSE = """
-            SELECT
-                hash,
-                exception_classname,
-                cause_classname,
-                java_classname,
-                java_method,
-                java_line_number
-            """;
     private static final String FIND_BY_HASH_SQL = """
             SELECT
                 hash,
@@ -58,12 +49,8 @@ public class StreamErrorHashPersistence {
             )
             VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING
             """;
-
-    private static final String DELETE_ORPHANED_STREAM_ERROR_HASH_SQL = """
-                    DELETE FROM stream_error_hash
-                    WHERE NOT EXISTS (select 1
-                                      from stream_error
-                                      where stream_error.hash = stream_error_hash.hash);
+    private static final String DELETE_HASH_SQL = """
+            DELETE FROM stream_error_hash WHERE hash = ?
             """;
 
     @Inject
@@ -113,10 +100,12 @@ public class StreamErrorHashPersistence {
             return streamErrorHashes;
         }
     }
+    
+    public void deleteHash(final String hash, final Connection connection) throws SQLException {
 
-    public int deleteOrphanedHashes(final Connection connection) throws SQLException {
-        try (final PreparedStatement preparedStatement = connection.prepareStatement(DELETE_ORPHANED_STREAM_ERROR_HASH_SQL)) {
-            return preparedStatement.executeUpdate();
+        try (final PreparedStatement preparedStatement = connection.prepareStatement(DELETE_HASH_SQL)) {
+            preparedStatement.setString(1, hash);
+            preparedStatement.executeUpdate();
         }
     }
 }
