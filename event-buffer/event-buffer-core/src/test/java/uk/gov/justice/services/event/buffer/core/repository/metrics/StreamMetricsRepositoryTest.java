@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.slf4j.Logger;
 import uk.gov.justice.services.jdbc.persistence.ViewStoreJdbcDataSourceProvider;
 
 import java.sql.Connection;
@@ -31,6 +32,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class StreamMetricsRepositoryTest {
+
+    private static final String LOCK_TABLE_STREAM_STATISTIC_IN_EXCLUSIVE_MODE_NOWAIT = """
+            LOCK TABLE stream_statistic IN EXCLUSIVE MODE NOWAIT
+            """;
+
 
     private static final String STREAM_METRICS_SQL = """
             SELECT
@@ -70,6 +76,9 @@ public class StreamMetricsRepositoryTest {
 
     @Mock
     private ViewStoreJdbcDataSourceProvider viewStoreJdbcDataSourceProvider;
+
+    @Mock
+    private Logger logger;
 
     @InjectMocks
     private StreamMetricsRepository streamMetricsRepository;
@@ -170,12 +179,14 @@ public class StreamMetricsRepositoryTest {
         final DataSource dataSource = mock(DataSource.class);
         final Connection connection = mock(Connection.class);
         final PreparedStatement checkMostRecentStatement = mock(PreparedStatement.class);
+        final PreparedStatement streamStatisticsLockStatement = mock(PreparedStatement.class);
         final PreparedStatement mergedStatement = mock(PreparedStatement.class);
         final ResultSet resultSet = mock(ResultSet.class);
 
         when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(MOST_RECENT_UPDATED_AT_SQL)).thenReturn(checkMostRecentStatement);
+        when(connection.prepareStatement(LOCK_TABLE_STREAM_STATISTIC_IN_EXCLUSIVE_MODE_NOWAIT)).thenReturn(streamStatisticsLockStatement);
         when(connection.prepareStatement(CALCULATE_STREAM_STATISTIC)).thenReturn(mergedStatement);
         when(checkMostRecentStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
@@ -189,6 +200,37 @@ public class StreamMetricsRepositoryTest {
         verify(connection).close();
         verify(checkMostRecentStatement).close();
         verify(mergedStatement).close();
+        verify(resultSet).close();
+    }
+
+    @Test
+    public void shouldNotExecuteCalculationIfLockingStreamStatisticTableFails() throws Exception {
+
+        final Timestamp freshnessLimit = Timestamp.valueOf(LocalDateTime.now());
+        final SQLException sqlException = new SQLException("Some locking exception");
+
+        final DataSource dataSource = mock(DataSource.class);
+        final Connection connection = mock(Connection.class);
+        final PreparedStatement checkMostRecentStatement = mock(PreparedStatement.class);
+        final PreparedStatement streamStatisticsLockStatement = mock(PreparedStatement.class);
+        final ResultSet resultSet = mock(ResultSet.class);
+
+        when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(dataSource);
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(LOCK_TABLE_STREAM_STATISTIC_IN_EXCLUSIVE_MODE_NOWAIT)).thenReturn(streamStatisticsLockStatement);
+        when(connection.prepareStatement(MOST_RECENT_UPDATED_AT_SQL)).thenReturn(checkMostRecentStatement);
+        when(streamStatisticsLockStatement.executeUpdate()).thenThrow(sqlException);
+        when(checkMostRecentStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getTimestamp("most_recent_updated_at")).thenReturn(Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
+
+        // run
+        streamMetricsRepository.calculateStreamStatistic(freshnessLimit);
+
+        // verify
+        verify(connection, never()).prepareStatement(CALCULATE_STREAM_STATISTIC);
+        verify(connection).close();
+        verify(checkMostRecentStatement).close();
         verify(resultSet).close();
     }
 
@@ -225,13 +267,17 @@ public class StreamMetricsRepositoryTest {
         final DataSource dataSource = mock(DataSource.class);
         final Connection connection = mock(Connection.class);
         final PreparedStatement checkMostRecentStatement = mock(PreparedStatement.class);
+        final PreparedStatement streamStatisticsLockStatement = mock(PreparedStatement.class);
         final PreparedStatement mergedStatement = mock(PreparedStatement.class);
         final ResultSet resultSet = mock(ResultSet.class);
 
         when(viewStoreJdbcDataSourceProvider.getDataSource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(MOST_RECENT_UPDATED_AT_SQL)).thenReturn(checkMostRecentStatement);
+        when(connection.prepareStatement(LOCK_TABLE_STREAM_STATISTIC_IN_EXCLUSIVE_MODE_NOWAIT)).thenReturn(streamStatisticsLockStatement);
         when(connection.prepareStatement(CALCULATE_STREAM_STATISTIC)).thenReturn(mergedStatement);
+
+
         when(checkMostRecentStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
         when(resultSet.getTimestamp("most_recent_updated_at")).thenReturn(null); // No updates exist
@@ -246,6 +292,9 @@ public class StreamMetricsRepositoryTest {
         verify(mergedStatement).close();
         verify(resultSet).close();
     }
+
+
+
 
     @Test
     public void shouldThrowMetricsJdbcExceptionIfDatabaseAccessFailsWhenCalculatingStreamStatistic() throws Exception {

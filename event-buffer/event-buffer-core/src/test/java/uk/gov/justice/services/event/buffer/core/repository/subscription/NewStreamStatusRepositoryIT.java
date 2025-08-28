@@ -130,14 +130,15 @@ public class NewStreamStatusRepositoryIT {
         assertThat(rowsUpdated, is(1));
         assertThat(newStreamStatusRepository.findAll().size(), is(1));
 
-        final StreamPositions streamPositions = newStreamStatusRepository.lockRowAndGetPositions(
+        final StreamUpdateContext streamUpdateContext = newStreamStatusRepository.lockStreamAndGetStreamUpdateContext(
                 streamId,
                 source,
                 componentName,
                 incomingEventPosition);
-        assertThat(streamPositions.currentStreamPosition(), is(0L));
-        assertThat(streamPositions.latestKnownStreamPosition(), is(0L));
-        assertThat(streamPositions.incomingEventPosition(), is(incomingEventPosition));
+        assertThat(streamUpdateContext.currentStreamPosition(), is(0L));
+        assertThat(streamUpdateContext.latestKnownStreamPosition(), is(0L));
+        assertThat(streamUpdateContext.incomingEventPosition(), is(incomingEventPosition));
+        assertThat(streamUpdateContext.streamErrorId(), is(empty()));
     }
 
     @Test

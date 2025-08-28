@@ -4,14 +4,14 @@ import static uk.gov.justice.services.event.sourcing.subscription.manager.EventO
 import static uk.gov.justice.services.event.sourcing.subscription.manager.EventOrderingStatus.EVENT_CORRECTLY_ORDERED;
 import static uk.gov.justice.services.event.sourcing.subscription.manager.EventOrderingStatus.EVENT_OUT_OF_ORDER;
 
-import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamPositions;
+import uk.gov.justice.services.event.buffer.core.repository.subscription.StreamUpdateContext;
 
 public class EventProcessingStatusCalculator {
 
-    public EventOrderingStatus calculateEventOrderingStatus(final StreamPositions streamPositions) {
+    public EventOrderingStatus calculateEventOrderingStatus(final StreamUpdateContext streamUpdateContext) {
 
-        final long incomingEventPosition = streamPositions.incomingEventPosition();
-        final long currentStreamPosition = streamPositions.currentStreamPosition();
+        final long incomingEventPosition = streamUpdateContext.incomingEventPosition();
+        final long currentStreamPosition = streamUpdateContext.currentStreamPosition();
 
         if(incomingEventPosition <= currentStreamPosition) {
             return EVENT_ALREADY_PROCESSED;

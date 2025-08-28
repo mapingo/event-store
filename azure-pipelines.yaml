@@ -43,3 +43,4 @@ stages:
     parameters:
       sonarqube_project: ${{ variables['sonarqubeProject'] }}
       coveralls_repo_token: $(cp-event-store)
+      skip_sonarr_coveralls: true
