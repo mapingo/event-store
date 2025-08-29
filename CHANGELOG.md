@@ -4,6 +4,12 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+### Added
+- New column `previous_event_number` on `event_log` table
+- New column `is_published` on `event_log` table
+- New index `idx_event_log_not_sequenced` on `event_log(date_created)`
+- New index `idx_event_log_not_published` on `event_log(date_created)`
+- New index `idx_event_log_global_sequence` on `event_log(previous_event_number,event_number);`
 ### Changed
 - Locking of stream_status table when publishing events, no longer calls error tables updates on locking errors
 
