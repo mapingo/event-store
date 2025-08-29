@@ -16,7 +16,7 @@
             <column name="is_published" type="BOOLEAN" defaultValue="FALSE"/>
         </addColumn>
         <sql>
-            CREATE INDEX IF NOT EXISTS idx_event_log_not_sequenced ON event_log(date_created) WHERE previous_event_number = NULL;
+            CREATE INDEX idx_event_log_not_sequenced ON event_log(date_created) WHERE previous_event_number IS NULL;
             CREATE INDEX IF NOT EXISTS idx_event_log_not_published ON event_log(date_created) WHERE is_published = FALSE;
             CREATE INDEX IF NOT EXISTS idx_event_log_global_sequence ON event_log(previous_event_number,event_number);
         </sql>
