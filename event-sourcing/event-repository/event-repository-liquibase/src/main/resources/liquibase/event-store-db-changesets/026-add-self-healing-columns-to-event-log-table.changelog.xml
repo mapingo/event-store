@@ -22,7 +22,9 @@
         </sql>
 
         <rollback>
-            <sql>DRP INDEX IF EXISTS idx_event_log_sequencing_status ON event_log(sequencing_status);</sql>
+            <sql>DROP INDEX IF EXISTS idx_event_log_global_sequence;</sql>
+            <sql>DROP INDEX IF EXISTS idx_event_log_not_published;</sql>
+            <sql>DROP INDEX IF EXISTS idx_event_log_not_sequenced;</sql>
             <dropColumn tableName="event_log">
                 <column name="sequencing_status"/>
             </dropColumn>
