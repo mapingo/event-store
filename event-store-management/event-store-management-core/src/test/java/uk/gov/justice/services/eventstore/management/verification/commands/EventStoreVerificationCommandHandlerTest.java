@@ -5,7 +5,6 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.jmx.api.parameters.JmxCommandRuntimeParameters.withNoCommandParameters;
 
 import uk.gov.justice.services.eventstore.management.commands.VerifyCatchupCommand;
-import uk.gov.justice.services.eventstore.management.commands.VerifyRebuildCommand;
 import uk.gov.justice.services.eventstore.management.verification.process.EventStoreVerification;
 
 import java.util.UUID;
@@ -24,17 +23,6 @@ public class EventStoreVerificationCommandHandlerTest {
 
     @InjectMocks
     private EventStoreVerificationCommandHandler eventStoreVerificationCommandHandler;
-
-    @Test
-    public void shouldRunVerificationForRebuild() throws Exception {
-
-        final UUID commandId = randomUUID();
-        final VerifyRebuildCommand verifyRebuildCommand = new VerifyRebuildCommand();
-
-        eventStoreVerificationCommandHandler.verifyRebuild(verifyRebuildCommand, commandId, withNoCommandParameters());
-
-        verify(eventStoreVerification).verifyEventStore(commandId, verifyRebuildCommand);
-    }
 
     @Test
     public void shouldRunVerificationForCatchup() throws Exception {

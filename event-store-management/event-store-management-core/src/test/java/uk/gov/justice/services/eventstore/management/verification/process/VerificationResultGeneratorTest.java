@@ -11,7 +11,6 @@ import static uk.gov.justice.services.jmx.api.domain.CommandState.COMMAND_FAILED
 import uk.gov.justice.services.eventstore.management.CommandResult;
 import uk.gov.justice.services.eventstore.management.commands.VerificationCommand;
 import uk.gov.justice.services.eventstore.management.commands.VerifyCatchupCommand;
-import uk.gov.justice.services.eventstore.management.commands.VerifyRebuildCommand;
 
 import java.util.List;
 import java.util.UUID;
@@ -54,7 +53,7 @@ public class VerificationResultGeneratorTest {
     public void shouldStillMarkAsSuccessfulIfWarningsExist() throws Exception {
 
         final UUID commandId = UUID.randomUUID();
-        final VerificationCommand verificationCommand = new VerifyRebuildCommand();
+        final VerificationCommand verificationCommand = new VerifyCatchupCommand();
 
         final List<VerificationResult> successfulResults = singletonList(mock(VerificationResult.class));
         final List<VerificationResult> warningResults = singletonList(mock(VerificationResult.class));
@@ -70,14 +69,14 @@ public class VerificationResultGeneratorTest {
 
         assertThat(commandResult.getCommandId(), is(commandId));
         assertThat(commandResult.getCommandState(), is(COMMAND_COMPLETE));
-        assertThat(commandResult.getMessage(), is("VERIFY_REBUILD completed successfully with 0 Error(s), 1 Warning(s) and 1 Success(es)"));
+        assertThat(commandResult.getMessage(), is("VERIFY_CATCHUP completed successfully with 0 Error(s), 1 Warning(s) and 1 Success(es)"));
     }
 
     @Test
     public void shouldGenerateErrorResultIfAnyErrorsExist() throws Exception {
 
         final UUID commandId = UUID.randomUUID();
-        final VerificationCommand verificationCommand = new VerifyRebuildCommand();
+        final VerificationCommand verificationCommand = new VerifyCatchupCommand();
 
         final List<VerificationResult> successfulResults = singletonList(mock(VerificationResult.class));
         final List<VerificationResult> warningResults = singletonList(mock(VerificationResult.class));
@@ -93,6 +92,6 @@ public class VerificationResultGeneratorTest {
 
         assertThat(commandResult.getCommandId(), is(commandId));
         assertThat(commandResult.getCommandState(), is(COMMAND_FAILED));
-        assertThat(commandResult.getMessage(), is("VERIFY_REBUILD failed with 1 Error(s), 1 Warning(s) and 1 Success(es)"));
+        assertThat(commandResult.getMessage(), is("VERIFY_CATCHUP failed with 1 Error(s), 1 Warning(s) and 1 Success(es)"));
     }
 }

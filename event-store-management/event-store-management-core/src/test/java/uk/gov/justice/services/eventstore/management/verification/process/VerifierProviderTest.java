@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.services.eventstore.management.commands.VerifyCatchupCommand;
-import uk.gov.justice.services.eventstore.management.commands.VerifyRebuildCommand;
 import uk.gov.justice.services.eventstore.management.verification.process.verifiers.ProcessedEventCountVerifier;
 import uk.gov.justice.services.eventstore.management.verification.process.verifiers.ProcessedEventLinkVerifier;
 import uk.gov.justice.services.eventstore.management.verification.process.verifiers.PublishedEventCountVerifier;
@@ -56,17 +55,5 @@ public class VerifierProviderTest {
         assertThat(verifiers.get(3), is(publishedEventLinkVerifier));
         assertThat(verifiers.get(4), is(processedEventLinkVerifier));
         assertThat(verifiers.get(5), is(allEventsInStreamsVerifier));
-    }
-
-    @Test
-    public void shouldGetTheListOfAllRebuildVerifiersInTheCorrectOrder() throws Exception {
-
-        final List<Verifier> verifiers = verifierProvider.getVerifiers(new VerifyRebuildCommand());
-
-        assertThat(verifiers.size(), is(3));
-
-        assertThat(verifiers.get(0), is(publishedEventCountVerifier));
-        assertThat(verifiers.get(1), is(publishedEventLinkVerifier));
-        assertThat(verifiers.get(2), is(allEventsInStreamsVerifier));
     }
 }
