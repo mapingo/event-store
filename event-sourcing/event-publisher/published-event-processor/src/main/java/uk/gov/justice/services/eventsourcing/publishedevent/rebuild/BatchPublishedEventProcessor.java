@@ -5,7 +5,7 @@ import static javax.transaction.Transactional.TxType.REQUIRED;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventJdbcRepository;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.util.List;
 import java.util.Set;
@@ -44,7 +44,7 @@ public class BatchPublishedEventProcessor {
 
         try (final Stream<Event> eventStream = eventJdbcRepository.findAllFromEventNumberUptoPageSize(currentEventNumber.get(), PAGE_SIZE);) {
 
-            final List<PublishedEvent> publishedEvents = publishedEventsRebuilder.rebuild(
+            final List<LinkedEvent> linkedEvents = publishedEventsRebuilder.rebuild(
                     eventStream,
                     previousEventNumber, currentEventNumber,
                     activeStreamIds);
@@ -53,7 +53,7 @@ public class BatchPublishedEventProcessor {
                     currentBatchProcessDetails,
                     currentEventNumber,
                     previousEventNumber,
-                    publishedEvents);
+                    linkedEvents);
 
             if (nextBatchProcessDetails.getProcessedInBatchCount() > 0) {
                 logger.info(format("Inserted %d PublishedEvents", nextBatchProcessDetails.getProcessCount()));

@@ -3,7 +3,7 @@ package uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.man
 import static java.lang.Thread.currentThread;
 
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.task.ConsumeEventQueueTaskManager;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
 
 import java.util.Queue;
@@ -27,7 +27,7 @@ public class ConcurrentEventStreamConsumerManager implements EventStreamConsumer
 
     private static final Object EXCLUSIVE_LOCK = new Object();
 
-    private final ConcurrentHashMap<UUID, Queue<PublishedEvent>> allEventStreams = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Queue<LinkedEvent>> allEventStreams = new ConcurrentHashMap<>();
 
     @Inject
     private EventsInProcessCounterProvider eventsInProcessCounterProvider;
@@ -49,20 +49,20 @@ public class ConcurrentEventStreamConsumerManager implements EventStreamConsumer
      * If the Queue is currently being processed no further action is taken, as the event will be
      * processed by the current ConsumeEventQueueTask.
      *
-     * @param publishedEvent - the JsonEnvelope to be consumed
+     * @param linkedEvent - the JsonEnvelope to be consumed
      * @return The number of events added to the stream. Note this is always one and is used to
      * count the number of events consumed
      */
     @Override
     public int add(
-            final PublishedEvent publishedEvent,
+            final LinkedEvent linkedEvent,
             final String subscriptionName,
             final CatchupCommand catchupCommand,
             final UUID commandId) {
 
-        final UUID streamId = publishedEvent.getStreamId();
+        final UUID streamId = linkedEvent.getStreamId();
 
-        final Queue<PublishedEvent> events = allEventStreams.computeIfAbsent(streamId, id -> new ConcurrentLinkedQueue<>());
+        final Queue<LinkedEvent> events = allEventStreams.computeIfAbsent(streamId, id -> new ConcurrentLinkedQueue<>());
 
         final EventsInProcessCounter eventsInProcessCounter = eventsInProcessCounterProvider.getInstance();
 
@@ -77,7 +77,7 @@ public class ConcurrentEventStreamConsumerManager implements EventStreamConsumer
                 }
             }
 
-            events.offer(publishedEvent);
+            events.offer(linkedEvent);
 
             if (notInProgress(events)) {
                 createAndSubmitTaskFor(events, subscriptionName, catchupCommand, commandId);
@@ -99,7 +99,7 @@ public class ConcurrentEventStreamConsumerManager implements EventStreamConsumer
     public boolean isEventConsumptionComplete(final FinishedProcessingMessage finishedProcessingMessage) {
 
         synchronized (EXCLUSIVE_LOCK) {
-            final Queue<PublishedEvent> finishedProcessingMessageQueue = finishedProcessingMessage.getQueue();
+            final Queue<LinkedEvent> finishedProcessingMessageQueue = finishedProcessingMessage.getQueue();
 
             final boolean finishedProcessingMessageQueueEmpty = finishedProcessingMessageQueue.isEmpty();
 
@@ -137,12 +137,12 @@ public class ConcurrentEventStreamConsumerManager implements EventStreamConsumer
         }
     }
 
-    private boolean notInProgress(final Queue<PublishedEvent> eventStream) {
+    private boolean notInProgress(final Queue<LinkedEvent> eventStream) {
         return !eventStreamsInProgressList.contains(eventStream);
     }
 
     private void createAndSubmitTaskFor(
-            final Queue<PublishedEvent> eventStream,
+            final Queue<LinkedEvent> eventStream,
             final String subscriptionName,
             final CatchupCommand catchupCommand,
             final UUID commandId) {

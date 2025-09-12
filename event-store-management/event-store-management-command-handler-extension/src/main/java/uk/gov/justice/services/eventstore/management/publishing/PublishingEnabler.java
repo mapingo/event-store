@@ -2,7 +2,7 @@ package uk.gov.justice.services.eventstore.management.publishing;
 
 import static uk.gov.justice.services.eventstore.management.commands.EnablePublishingCommand.ENABLE_PUBLISHING;
 
-import uk.gov.justice.services.eventsourcing.publishedevent.prepublish.PrePublisherTimerConfig;
+import uk.gov.justice.services.eventsourcing.publishedevent.prepublish.EventLinkerTimerConfig;
 import uk.gov.justice.services.eventsourcing.publishedevent.publishing.PublisherTimerConfig;
 import uk.gov.justice.services.eventstore.management.commands.PublishingCommand;
 
@@ -16,7 +16,7 @@ public class PublishingEnabler {
     private PublisherTimerConfig publishTimerConfig;
 
     @Inject
-    private PrePublisherTimerConfig prePublisherTimerConfig;
+    private EventLinkerTimerConfig eventLinkerTimerConfig;
 
     @Inject
     private Logger logger;
@@ -31,14 +31,14 @@ public class PublishingEnabler {
     }
 
     private void enable() {
-        prePublisherTimerConfig.setDisabled(false);
+        eventLinkerTimerConfig.setDisabled(false);
         publishTimerConfig.setDisabled(false);
 
         logger.info("Publishing of events enabled");
     }
 
     private void disable() {
-        prePublisherTimerConfig.setDisabled(true);
+        eventLinkerTimerConfig.setDisabled(true);
         publishTimerConfig.setDisabled(true);
 
         logger.info("Publishing of events disabled");

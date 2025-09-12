@@ -1,13 +1,15 @@
 package uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.task;
 
-import java.util.Queue;
-import java.util.UUID;
-import javax.inject.Inject;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.CatchupEventProcessor;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.EventStreamConsumptionResolver;
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.FinishedProcessingMessage;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
+
+import java.util.Queue;
+import java.util.UUID;
+
+import javax.inject.Inject;
 
 public class EventQueueConsumer {
 
@@ -22,17 +24,17 @@ public class EventQueueConsumer {
 
     public boolean consumeEventQueue(
             final UUID commandId,
-            final Queue<PublishedEvent> events,
+            final Queue<LinkedEvent> events,
             final String subscriptionName,
             final CatchupCommand catchupCommand) {
 
         while (!events.isEmpty()) {
 
-            final PublishedEvent publishedEvent = events.poll();
+            final LinkedEvent linkedEvent = events.poll();
             try {
-                catchupEventProcessor.processWithEventBuffer(publishedEvent, subscriptionName);
+                catchupEventProcessor.processWithEventBuffer(linkedEvent, subscriptionName);
             } catch (final Exception e) {
-                eventProcessingFailedHandler.handleEventFailure(e, publishedEvent, subscriptionName, catchupCommand, commandId);
+                eventProcessingFailedHandler.handleEventFailure(e, linkedEvent, subscriptionName, catchupCommand, commandId);
             } finally {
                 eventStreamConsumptionResolver.decrementEventsInProcessCount();
             }

@@ -6,7 +6,7 @@ import static uk.gov.justice.services.common.converter.ZonedDateTimes.fromSqlTim
 import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.jdbc.persistence.DataAccessException;
 
 import java.sql.Connection;
@@ -86,22 +86,22 @@ public class EventStoreDataAccess {
         }
     }
 
-    public void insertIntoPublishedEvent(final PublishedEvent publishedEvent) {
+    public void insertIntoPublishedEvent(final LinkedEvent linkedEvent) {
 
         final String query = INSERT_INTO_PUBLISHED_EVENT_QUERY;
 
         try (final Connection connection = eventStoreDataSource.getConnection()) {
 
             try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setObject(1, publishedEvent.getId());
-                preparedStatement.setObject(2, publishedEvent.getStreamId());
-                preparedStatement.setLong(3, publishedEvent.getPositionInStream());
-                preparedStatement.setString(4, publishedEvent.getName());
-                preparedStatement.setString(5, publishedEvent.getPayload());
-                preparedStatement.setString(6, publishedEvent.getMetadata());
-                preparedStatement.setObject(7, toSqlTimestamp(publishedEvent.getCreatedAt()));
-                preparedStatement.setLong(8, publishedEvent.getEventNumber().get());
-                preparedStatement.setLong(9, publishedEvent.getPreviousEventNumber());
+                preparedStatement.setObject(1, linkedEvent.getId());
+                preparedStatement.setObject(2, linkedEvent.getStreamId());
+                preparedStatement.setLong(3, linkedEvent.getPositionInStream());
+                preparedStatement.setString(4, linkedEvent.getName());
+                preparedStatement.setString(5, linkedEvent.getPayload());
+                preparedStatement.setString(6, linkedEvent.getMetadata());
+                preparedStatement.setObject(7, toSqlTimestamp(linkedEvent.getCreatedAt()));
+                preparedStatement.setLong(8, linkedEvent.getEventNumber().get());
+                preparedStatement.setLong(9, linkedEvent.getPreviousEventNumber());
 
                 preparedStatement.executeUpdate();
             }
@@ -200,16 +200,16 @@ public class EventStoreDataAccess {
         }
     }
 
-    public List<PublishedEvent> findAllPublishedEvents() {
+    public List<LinkedEvent> findAllPublishedEvents() {
         return doGetPublishedEvents(FIND_ALL_PUBLISHED_EVENTS_QUERY);
     }
 
-    public List<PublishedEvent> findAllPublishedEventsOrderedByEventNumber() {
+    public List<LinkedEvent> findAllPublishedEventsOrderedByEventNumber() {
         return doGetPublishedEvents(FIND_ALL_PUBLISHED_EVENTS_ORDERED_BT_EVENT_NUMBER_QUERY);
     }
 
-    private List<PublishedEvent> doGetPublishedEvents(final String query) {
-        final List<PublishedEvent> events = new ArrayList<>();
+    private List<LinkedEvent> doGetPublishedEvents(final String query) {
+        final List<LinkedEvent> events = new ArrayList<>();
 
         try (final Connection connection = eventStoreDataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -217,7 +217,7 @@ public class EventStoreDataAccess {
 
             while (resultSet.next()) {
 
-                final PublishedEvent publishedEvent = new PublishedEvent(
+                final LinkedEvent linkedEvent = new LinkedEvent(
                         (UUID) resultSet.getObject("id"),
                         (UUID) resultSet.getObject("stream_id"),
                         resultSet.getLong("position_in_stream"),
@@ -229,7 +229,7 @@ public class EventStoreDataAccess {
                         resultSet.getLong("previous_event_number")
                 );
 
-                events.add(publishedEvent);
+                events.add(linkedEvent);
             }
 
             return events;

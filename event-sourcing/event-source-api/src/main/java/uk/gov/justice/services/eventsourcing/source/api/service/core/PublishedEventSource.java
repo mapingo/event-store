@@ -1,6 +1,6 @@
 package uk.gov.justice.services.eventsourcing.source.api.service.core;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingEventRange;
 
 import java.util.Optional;
@@ -19,11 +19,11 @@ public interface PublishedEventSource {
      * @param eventNumber An event number to search from
      * @return a Java Stream of Events
      */
-    Stream<PublishedEvent> findEventsSince(final long eventNumber);
+    Stream<LinkedEvent> findEventsSince(final long eventNumber);
 
-    Stream<PublishedEvent> findEventRange(final MissingEventRange missingEventRange);
+    Stream<LinkedEvent> findEventRange(final MissingEventRange missingEventRange);
 
-    Optional<PublishedEvent> findByEventId(final UUID id);
+    Optional<LinkedEvent> findByEventId(final UUID id);
 
     Long getHighestPublishedEventNumber();
 }

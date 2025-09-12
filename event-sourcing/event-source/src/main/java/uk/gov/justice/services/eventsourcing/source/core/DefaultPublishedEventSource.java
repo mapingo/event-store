@@ -3,7 +3,7 @@ package uk.gov.justice.services.eventsourcing.source.core;
 import static javax.transaction.Transactional.TxType.REQUIRED;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourcePublishedEventRepository;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingEventRange;
 
@@ -22,13 +22,13 @@ public class DefaultPublishedEventSource implements PublishedEventSource {
     }
 
     @Override
-    public Stream<PublishedEvent> findEventsSince(final long eventNumber) {
+    public Stream<LinkedEvent> findEventsSince(final long eventNumber) {
         return multipleDataSourcePublishedEventRepository.findEventsSince(eventNumber);
     }
 
     @Transactional(REQUIRED)
     @Override
-    public Stream<PublishedEvent> findEventRange(final MissingEventRange missingEventRange) {
+    public Stream<LinkedEvent> findEventRange(final MissingEventRange missingEventRange) {
 
         final Long fromEventNumber = missingEventRange.getMissingEventFrom();
         final Long toEventNumber = missingEventRange.getMissingEventTo();
@@ -38,14 +38,14 @@ public class DefaultPublishedEventSource implements PublishedEventSource {
 
     @Transactional(REQUIRED)
     @Override
-    public Optional<PublishedEvent> findByEventId(final UUID eventId) {
+    public Optional<LinkedEvent> findByEventId(final UUID eventId) {
         return multipleDataSourcePublishedEventRepository.findByEventId(eventId);
     }
 
     @Transactional(REQUIRED)
     @Override
     public Long getHighestPublishedEventNumber() {
-        final Optional<PublishedEvent> latestPublishedEvent = multipleDataSourcePublishedEventRepository
+        final Optional<LinkedEvent> latestPublishedEvent = multipleDataSourcePublishedEventRepository
                 .getLatestPublishedEvent();
 
         return latestPublishedEvent.map(publishedEvent -> publishedEvent

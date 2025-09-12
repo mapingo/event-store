@@ -7,7 +7,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.ZonedDateTime;
@@ -82,7 +82,7 @@ public class PublishedEventBuilder {
         return this;
     }
 
-    public PublishedEvent build() {
+    public LinkedEvent build() {
 
         final JsonEnvelope envelope = envelopeFrom(
                 metadataBuilder()
@@ -101,6 +101,6 @@ public class PublishedEventBuilder {
             payloadJSON = envelope.payload().toString();
         }
 
-        return new PublishedEvent(id, streamId, positionInStream, name, metadataJSON, payloadJSON, timestamp, eventNumber, previousEventNumber);
+        return new LinkedEvent(id, streamId, positionInStream, name, metadataJSON, payloadJSON, timestamp, eventNumber, previousEventNumber);
     }
 }

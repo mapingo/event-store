@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.getValueOfField;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
 import uk.gov.justice.services.eventstore.management.commands.EventCatchupCommand;
 
@@ -33,7 +33,7 @@ public class ConsumeEventQueueTaskFactoryTest {
     @Test
     public void shouldCreateConsumeEventQueueTask() throws Exception {
 
-        final Queue<PublishedEvent> events = mock(Queue.class);
+        final Queue<LinkedEvent> events = mock(Queue.class);
         final String subscriptionName = "subscription name";
         final CatchupCommand catchupCommand = new EventCatchupCommand();
         final UUID commandId = randomUUID();

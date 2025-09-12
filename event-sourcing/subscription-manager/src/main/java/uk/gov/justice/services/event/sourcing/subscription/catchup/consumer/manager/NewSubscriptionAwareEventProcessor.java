@@ -2,7 +2,7 @@ package uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.man
 
 import uk.gov.justice.services.event.sourcing.subscription.manager.NewSubscriptionManagerDelegate;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventConverter;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.subscription.registry.SubscriptionsDescriptorsRegistry;
 
@@ -19,9 +19,9 @@ public class NewSubscriptionAwareEventProcessor {
     @Inject
     private NewSubscriptionManagerDelegate newSubscriptionManagerDelegate;
 
-    public int processWithEventBuffer(final PublishedEvent publishedEvent, final String subscriptionName) {
+    public int processWithEventBuffer(final LinkedEvent linkedEvent, final String subscriptionName) {
         final String componentName = subscriptionsDescriptorsRegistry.findComponentNameBy(subscriptionName);
-        final JsonEnvelope eventEnvelope = eventConverter.envelopeOf(publishedEvent);
+        final JsonEnvelope eventEnvelope = eventConverter.envelopeOf(linkedEvent);
         newSubscriptionManagerDelegate.process(eventEnvelope, componentName);
         return 1;
     }

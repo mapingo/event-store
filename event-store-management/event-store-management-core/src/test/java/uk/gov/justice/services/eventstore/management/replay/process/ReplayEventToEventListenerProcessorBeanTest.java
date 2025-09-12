@@ -11,7 +11,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import uk.gov.justice.services.event.sourcing.subscription.manager.EventBufferProcessor;
 import uk.gov.justice.services.event.sourcing.subscription.manager.PublishedEventSourceProvider;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventConverter;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -48,12 +48,12 @@ public class ReplayEventToEventListenerProcessorBeanTest {
     @Test
     public void shouldFetchPublishedEventAndInvokeEventProcessor() {
         final PublishedEventSource publishedEventSource = mock(PublishedEventSource.class);
-        final PublishedEvent publishedEvent =  mock(PublishedEvent.class);
+        final LinkedEvent linkedEvent =  mock(LinkedEvent.class);
         final JsonEnvelope eventEnvelope = mock(JsonEnvelope.class);
         final EventBufferProcessor eventBufferProcessor = mock(EventBufferProcessor.class);
         when(publishedEventSourceProvider.getPublishedEventSource(EVENT_SOURCE_NAME)).thenReturn(publishedEventSource);
-        when(publishedEventSource.findByEventId(COMMAND_RUNTIME_ID)).thenReturn(Optional.of(publishedEvent));
-        when(eventConverter.envelopeOf(publishedEvent)).thenReturn(eventEnvelope);
+        when(publishedEventSource.findByEventId(COMMAND_RUNTIME_ID)).thenReturn(Optional.of(linkedEvent));
+        when(eventConverter.envelopeOf(linkedEvent)).thenReturn(eventEnvelope);
 
         replayEventToEventListenerProcessorBean.perform(REPLAY_EVENT_CONTEXT);
 

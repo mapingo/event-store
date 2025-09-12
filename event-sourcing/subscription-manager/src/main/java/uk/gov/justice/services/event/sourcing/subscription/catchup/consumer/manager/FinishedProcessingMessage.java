@@ -1,6 +1,6 @@
 package uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.util.Objects;
 import java.util.Queue;
@@ -10,13 +10,13 @@ import java.util.Queue;
  */
 public class FinishedProcessingMessage {
 
-    private final Queue<PublishedEvent> queue;
+    private final Queue<LinkedEvent> queue;
 
-    public FinishedProcessingMessage(final Queue<PublishedEvent> queue) {
+    public FinishedProcessingMessage(final Queue<LinkedEvent> queue) {
         this.queue = queue;
     }
 
-    public Queue<PublishedEvent> getQueue() {
+    public Queue<LinkedEvent> getQueue() {
         return queue;
     }
 

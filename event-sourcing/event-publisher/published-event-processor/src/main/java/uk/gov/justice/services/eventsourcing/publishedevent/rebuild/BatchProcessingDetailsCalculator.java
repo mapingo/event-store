@@ -1,6 +1,6 @@
 package uk.gov.justice.services.eventsourcing.publishedevent.rebuild;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -21,9 +21,9 @@ public class BatchProcessingDetailsCalculator {
             final BatchProcessDetails currentBatchProcessDetails,
             final AtomicLong currentEventNumber,
             final AtomicLong previousEventNumber,
-            final List<PublishedEvent> publishedEvents) {
+            final List<LinkedEvent> linkedEvents) {
 
-        final int processedInBatchCount = publishedEvents.size();
+        final int processedInBatchCount = linkedEvents.size();
         return new BatchProcessDetails(
                 previousEventNumber,
                 new AtomicLong(currentEventNumber.get()),

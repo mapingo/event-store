@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 import java.util.HashSet;
 import java.util.Queue;
@@ -21,17 +21,17 @@ public class EventStreamsInProgressListTest {
 
         final int queueCount = 10_000;
 
-        final Set<Queue<PublishedEvent>> allStreams = new HashSet<>();
+        final Set<Queue<LinkedEvent>> allStreams = new HashSet<>();
 
         for (int i = 0; i < queueCount; i++) {
-            final Queue<PublishedEvent> eventStream = mock(Queue.class);
+            final Queue<LinkedEvent> eventStream = mock(Queue.class);
 
             eventStreamsInProgressList.add(eventStream);
             allStreams.add(eventStream);
         }
 
         new Thread(() -> {
-            for(final Queue<PublishedEvent> eventStream: allStreams) {
+            for(final Queue<LinkedEvent> eventStream: allStreams) {
                 eventStreamsInProgressList.remove(eventStream);
             }
         }).start();

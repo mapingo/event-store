@@ -2,7 +2,7 @@ package uk.gov.justice.services.eventstore.management.publishing;
 
 import static org.mockito.Mockito.inOrder;
 
-import uk.gov.justice.services.eventsourcing.publishedevent.prepublish.PrePublisherTimerConfig;
+import uk.gov.justice.services.eventsourcing.publishedevent.prepublish.EventLinkerTimerConfig;
 import uk.gov.justice.services.eventsourcing.publishedevent.publishing.PublisherTimerConfig;
 import uk.gov.justice.services.eventstore.management.commands.DisablePublishingCommand;
 import uk.gov.justice.services.eventstore.management.commands.EnablePublishingCommand;
@@ -22,7 +22,7 @@ public class PublishingEnablerTest {
     private PublisherTimerConfig publishTimerConfig;
 
     @Mock
-    private PrePublisherTimerConfig prePublisherTimerConfig;
+    private EventLinkerTimerConfig eventLinkerTimerConfig;
 
     @Mock
     private Logger logger;
@@ -37,9 +37,9 @@ public class PublishingEnablerTest {
 
         publishingEnabler.enableOrDisable(enablePublishingCommand);
 
-        final InOrder inOrder = inOrder(prePublisherTimerConfig, publishTimerConfig, logger);
+        final InOrder inOrder = inOrder(eventLinkerTimerConfig, publishTimerConfig, logger);
 
-        inOrder.verify(prePublisherTimerConfig).setDisabled(false);
+        inOrder.verify(eventLinkerTimerConfig).setDisabled(false);
         inOrder.verify(publishTimerConfig).setDisabled(false);
         inOrder.verify(logger).info("Publishing of events enabled");
     }
@@ -51,9 +51,9 @@ public class PublishingEnablerTest {
 
         publishingEnabler.enableOrDisable(disablePublishingCommand);
 
-        final InOrder inOrder = inOrder(prePublisherTimerConfig, publishTimerConfig, logger);
+        final InOrder inOrder = inOrder(eventLinkerTimerConfig, publishTimerConfig, logger);
 
-        inOrder.verify(prePublisherTimerConfig).setDisabled(true);
+        inOrder.verify(eventLinkerTimerConfig).setDisabled(true);
         inOrder.verify(publishTimerConfig).setDisabled(true);
         inOrder.verify(logger).info("Publishing of events disabled");
     }

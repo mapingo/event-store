@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager.EventStreamConsumptionResolver;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventstore.management.commands.CatchupCommand;
 import uk.gov.justice.services.eventstore.management.commands.EventCatchupCommand;
 import uk.gov.justice.services.eventstore.management.events.catchup.CatchupProcessingOfEventFailedEvent;
@@ -49,7 +49,7 @@ public class ConsumeEventQueueBeanTest {
     public void shouldConsumeTheEventQueueUntilEventsConsumedIsTrue() throws Exception {
 
         final UUID commandId = randomUUID();
-        final Queue<PublishedEvent> events = new ConcurrentLinkedQueue<>(singletonList(mock(PublishedEvent.class)));
+        final Queue<LinkedEvent> events = new ConcurrentLinkedQueue<>(singletonList(mock(LinkedEvent.class)));
         final String subscriptionName = "subscriptionName";
         final CatchupCommand eventCatchupCommand = new EventCatchupCommand();
 
@@ -73,7 +73,7 @@ public class ConsumeEventQueueBeanTest {
         );
 
         final UUID commandId = randomUUID();
-        final Queue<PublishedEvent> events = new ConcurrentLinkedQueue<>(singletonList(mock(PublishedEvent.class)));
+        final Queue<LinkedEvent> events = new ConcurrentLinkedQueue<>(singletonList(mock(LinkedEvent.class)));
         final String subscriptionName = "subscriptionName";
         final CatchupCommand eventCatchupCommand = new EventCatchupCommand();
 

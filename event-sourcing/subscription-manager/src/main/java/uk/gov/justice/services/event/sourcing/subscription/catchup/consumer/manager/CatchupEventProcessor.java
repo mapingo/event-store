@@ -1,8 +1,8 @@
 package uk.gov.justice.services.event.sourcing.subscription.catchup.consumer.manager;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 
 public interface CatchupEventProcessor {
 
-    int processWithEventBuffer(final PublishedEvent event, final String subscriptionName);
+    int processWithEventBuffer(final LinkedEvent event, final String subscriptionName);
 }

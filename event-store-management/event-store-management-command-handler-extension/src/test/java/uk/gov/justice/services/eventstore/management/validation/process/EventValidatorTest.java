@@ -8,7 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
 
 import java.util.List;
@@ -36,10 +36,10 @@ public class EventValidatorTest {
     @Test
     public void shouldGetAllPublishedEventsAndReturnAnyValidationErrors() throws Exception {
 
-        final PublishedEvent successfulEvent_1 = mock(PublishedEvent.class);
-        final PublishedEvent failedEvent_1 = mock(PublishedEvent.class);
-        final PublishedEvent successfulEvent_2 = mock(PublishedEvent.class);
-        final PublishedEvent failedEvent_2 = mock(PublishedEvent.class);
+        final LinkedEvent successfulEvent_1 = mock(LinkedEvent.class);
+        final LinkedEvent failedEvent_1 = mock(LinkedEvent.class);
+        final LinkedEvent successfulEvent_2 = mock(LinkedEvent.class);
+        final LinkedEvent failedEvent_2 = mock(LinkedEvent.class);
 
         final ValidationError validationError_1 = mock(ValidationError.class);
         final ValidationError validationError_2 = mock(ValidationError.class);

@@ -4,7 +4,7 @@ import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimes
 import static uk.gov.justice.services.eventsourcing.publishedevent.jdbc.PublishedEventStatements.INSERT_INTO_PUBLISHED_EVENT_SQL;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MissingEventNumberException;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventsourcing.util.io.Closer;
 import uk.gov.justice.services.jdbc.persistence.DataAccessException;
 
@@ -34,22 +34,22 @@ public class BatchedPublishedEventInserter implements AutoCloseable {
         }
     }
 
-    public PublishedEvent addToBatch(final PublishedEvent publishedEvent) {
+    public LinkedEvent addToBatch(final LinkedEvent linkedEvent) {
 
         try {
-            preparedStatement.setObject(1, publishedEvent.getId());
-            preparedStatement.setObject(2, publishedEvent.getStreamId());
-            preparedStatement.setLong(3, publishedEvent.getPositionInStream());
-            preparedStatement.setString(4, publishedEvent.getName());
-            preparedStatement.setString(5, publishedEvent.getPayload());
-            preparedStatement.setString(6, publishedEvent.getMetadata());
-            preparedStatement.setObject(7, toSqlTimestamp(publishedEvent.getCreatedAt()));
-            preparedStatement.setLong(8, publishedEvent.getEventNumber().orElseThrow(() -> new MissingEventNumberException("Event with id '%s' does not have an event number")));
-            preparedStatement.setLong(9, publishedEvent.getPreviousEventNumber());
+            preparedStatement.setObject(1, linkedEvent.getId());
+            preparedStatement.setObject(2, linkedEvent.getStreamId());
+            preparedStatement.setLong(3, linkedEvent.getPositionInStream());
+            preparedStatement.setString(4, linkedEvent.getName());
+            preparedStatement.setString(5, linkedEvent.getPayload());
+            preparedStatement.setString(6, linkedEvent.getMetadata());
+            preparedStatement.setObject(7, toSqlTimestamp(linkedEvent.getCreatedAt()));
+            preparedStatement.setLong(8, linkedEvent.getEventNumber().orElseThrow(() -> new MissingEventNumberException("Event with id '%s' does not have an event number")));
+            preparedStatement.setLong(9, linkedEvent.getPreviousEventNumber());
 
             preparedStatement.addBatch();
 
-            return publishedEvent;
+            return linkedEvent;
 
         } catch (final SQLException e) {
             throw new DataAccessException("Failed to add PublishedEvent to batch", e);

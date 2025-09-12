@@ -5,7 +5,7 @@ import static javax.transaction.Transactional.TxType.NEVER;
 
 import uk.gov.justice.services.event.sourcing.subscription.manager.PublishedEventSourceProvider;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventConverter;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -39,19 +39,19 @@ public class ReplayEventToEventListenerProcessorBean {
         final String source = replayEventContext.getEventSourceName();
         final String component = replayEventContext.getComponentName();
 
-        final PublishedEvent publishedEvent = fetchPublishedEvent(source, eventId);
-        process(source, component, publishedEvent);
+        final LinkedEvent linkedEvent = fetchPublishedEvent(source, eventId);
+        process(source, component, linkedEvent);
     }
 
-    private PublishedEvent fetchPublishedEvent(final String eventSourceName, final UUID eventId) {
+    private LinkedEvent fetchPublishedEvent(final String eventSourceName, final UUID eventId) {
         final PublishedEventSource publishedEventSource = publishedEventSourceProvider.getPublishedEventSource(eventSourceName);
 
         return publishedEventSource.findByEventId(eventId)
                 .orElseThrow(() -> new ReplayEventFailedException("Published event not found for given commandRuntimeId:" + eventId + " under event source name:" + eventSourceName));
     }
 
-    private void process(final String source, final String component, final PublishedEvent publishedEvent) {
-        final JsonEnvelope eventEnvelope = eventConverter.envelopeOf(publishedEvent);
+    private void process(final String source, final String component, final LinkedEvent linkedEvent) {
+        final JsonEnvelope eventEnvelope = eventConverter.envelopeOf(linkedEvent);
         transactionReplayEventProcessor.process(source, component, eventEnvelope);
     }
 }
