@@ -1,4 +1,4 @@
-package uk.gov.justice.services.eventsourcing.publishedevent.prepublish.helpers;
+package uk.gov.justice.services.eventsourcing.eventpublishing.helpers;
 
 import uk.gov.justice.services.jmx.api.command.SystemCommand;
 import uk.gov.justice.services.jmx.command.SystemCommandHandlerProxy;

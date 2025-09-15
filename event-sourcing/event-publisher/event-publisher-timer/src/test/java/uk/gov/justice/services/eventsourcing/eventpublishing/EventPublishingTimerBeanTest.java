@@ -1,12 +1,14 @@
 package uk.gov.justice.services.eventsourcing.eventpublishing;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.eventsourcing.eventpublishing.EventPublishingTimerBean.TIMER_JOB_NAME;
 
 import uk.gov.justice.services.ejb.timer.TimerServiceManager;
-import uk.gov.justice.services.eventsourcing.publishedevent.publishing.PublisherTimerConfig;
+import uk.gov.justice.services.eventsourcing.eventpublishing.configuration.EventPublishingWorkerConfig;
 
+import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
 import org.junit.jupiter.api.Test;
@@ -22,25 +24,27 @@ public class EventPublishingTimerBeanTest {
     private TimerService timerService;
 
     @Mock
-    private PublisherTimerConfig publisherTimerConfig;
+    private EventPublishingWorkerConfig eventPublishingWorkerConfig;
 
     @Mock
     private TimerServiceManager timerServiceManager;
 
     @Mock
-    private LinkedEventPublishingWorker linkedEventPublishingWorker;
+    private SufficientTimeRemainingCalculatorFactory sufficientTimeRemainingCalculatorFactory;
+
+    @Mock
+    private EventPublishingWorker eventPublishingWorker;
 
     @InjectMocks
     private EventPublishingTimerBean eventPublishingTimerBean;
 
     @Test
-    public void shouldStartTheTimeOnPostConstructWithTheCorrectConfiguration() throws Exception {
+    public void shouldStartEventLinkingWorkerAndSetTimer() throws Exception {
+        final long timerStartWaitMilliseconds = 23;
+        final long timerIntervalMilliseconds = 76;
 
-        final long timerStartWaitMilliseconds = 239847L;
-        final long timerIntervalMilliseconds = 92837L;
-
-        when(publisherTimerConfig.getTimerStartWaitMilliseconds()).thenReturn(timerStartWaitMilliseconds);
-        when(publisherTimerConfig.getTimerIntervalMilliseconds()).thenReturn(timerIntervalMilliseconds);
+        when(eventPublishingWorkerConfig.getTimerStartWaitMilliseconds()).thenReturn(timerStartWaitMilliseconds);
+        when(eventPublishingWorkerConfig.getTimerIntervalMilliseconds()).thenReturn(timerIntervalMilliseconds);
 
         eventPublishingTimerBean.startTimerService();
 
@@ -52,10 +56,20 @@ public class EventPublishingTimerBeanTest {
     }
 
     @Test
-    public void shouldRunTheEventPublishingWorkerOnTimeout() throws Exception {
+    public void shouldRunEventLinkingWorker() throws Exception {
 
-        eventPublishingTimerBean.runEventPublishing();
+        final long timeBetweenRunsMilliseconds = 23L;
 
-        verify(linkedEventPublishingWorker).publishQueuedEvents();
+        final Timer timer = mock(Timer.class);
+        final SufficientTimeRemainingCalculator sufficientTimeRemainingCalculator = mock(SufficientTimeRemainingCalculator.class);
+
+        when(eventPublishingWorkerConfig.getTimeBetweenRunsMilliseconds()).thenReturn(timeBetweenRunsMilliseconds);
+        when(sufficientTimeRemainingCalculatorFactory.createNew(
+                timer,
+                timeBetweenRunsMilliseconds)).thenReturn(sufficientTimeRemainingCalculator);
+
+        eventPublishingTimerBean.runEventPublishing(timer);
+
+        verify(eventPublishingWorker).publishNewEvents(sufficientTimeRemainingCalculator);
     }
 }
