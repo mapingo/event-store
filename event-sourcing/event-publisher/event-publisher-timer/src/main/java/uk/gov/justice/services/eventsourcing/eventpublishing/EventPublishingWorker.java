@@ -2,17 +2,17 @@ package uk.gov.justice.services.eventsourcing.eventpublishing;
 
 import javax.inject.Inject;
 
-public class EventLinkingWorker {
+public class EventPublishingWorker {
 
     @Inject
-    private EventNumberLinker eventNumberLinker;
+    private LinkedEventPublisher linkedEventPublisher;
 
-    public void linkNewEvents(final SufficientTimeRemainingCalculator sufficientTimeRemainingCalculator) {
+    public void publishNewEvents(final SufficientTimeRemainingCalculator sufficientTimeRemainingCalculator) {
 
         boolean continueRunning = true;
         while (continueRunning) {
             continueRunning = sufficientTimeRemainingCalculator.hasSufficientProcessingTimeRemaining()
-                              && eventNumberLinker.findAndAndLinkNextUnlinkedEvent();
+                              && linkedEventPublisher.publishNextNewEvent();
         }
     }
 }

@@ -9,7 +9,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -56,7 +55,7 @@ public class LinkedEventPublisherTest {
         when(eventPublishingRepository.findEventFromEventLog(eventId)).thenReturn(of(linkedEvent));
         when(eventConverter.envelopeOf(linkedEvent)).thenReturn(jsonEnvelope);
 
-        assertThat(linkedEventPublisher.publishNextQueuedEvent(), is(true));
+        assertThat(linkedEventPublisher.publishNextNewEvent(), is(true));
 
         final InOrder inOrder = inOrder(eventPublisher, eventPublishingRepository);
         inOrder.verify(eventPublisher).publish(jsonEnvelope);
@@ -68,7 +67,7 @@ public class LinkedEventPublisherTest {
 
         when(eventPublishingRepository.getNextEventIdFromPublishQueue()).thenReturn(empty());
 
-        assertThat(linkedEventPublisher.publishNextQueuedEvent(), is(false));
+        assertThat(linkedEventPublisher.publishNextNewEvent(), is(false));
 
         verifyNoMoreInteractions(eventPublishingRepository);
         verifyNoInteractions(eventPublisher);
@@ -84,7 +83,7 @@ public class LinkedEventPublisherTest {
 
         final EventPublishingException eventPublishingException = assertThrows(
                 EventPublishingException.class,
-                () -> linkedEventPublisher.publishNextQueuedEvent());
+                () -> linkedEventPublisher.publishNextNewEvent());
 
         assertThat(eventPublishingException.getMessage(), is("Failed to find LinkedEvent in event_log with id '933248cd-a5d4-417c-b28c-709ab009ab50' when id exists in publish_queue table"));
     }

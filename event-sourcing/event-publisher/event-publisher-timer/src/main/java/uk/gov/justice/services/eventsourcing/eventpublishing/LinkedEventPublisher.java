@@ -28,7 +28,7 @@ public class LinkedEventPublisher {
     private EventPublishingRepository eventPublishingRepository;
 
     @Transactional(REQUIRES_NEW)
-    public boolean publishNextQueuedEvent() {
+    public boolean publishNextNewEvent() {
 
         final Optional<UUID> eventId = eventPublishingRepository.getNextEventIdFromPublishQueue();
         if (eventId.isPresent()) {

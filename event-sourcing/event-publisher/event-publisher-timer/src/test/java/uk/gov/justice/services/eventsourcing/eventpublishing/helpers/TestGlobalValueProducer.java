@@ -1,4 +1,4 @@
-package uk.gov.justice.services.eventsourcing.publishedevent.prepublish.helpers;
+package uk.gov.justice.services.eventsourcing.eventpublishing.helpers;
 
 import uk.gov.justice.services.common.configuration.GlobalValue;
 import uk.gov.justice.services.common.configuration.GlobalValueProducer;

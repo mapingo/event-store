@@ -18,6 +18,15 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
   - Events now exist solely in event_log table, removing the need for published_event
   - Publish queue now reads directly from event_log table and ignores published_event
   - published_event table to be deprecated
+  - Runs of `EventLinkingTimerBean` now configured using new jndi values:
+    - `event.linking.worker.start.wait.milliseconds`
+    - `event.linking.worker.timer.interval.milliseconds`
+    - `event.linking.worker.time.between.runs.milliseconds`
+  - Runs of `EventPublishingTimerBean` now configured using new jndi values:
+    - `event.publishing.worker.start.wait.milliseconds`
+    - `event.publishing.worker.timer.interval.milliseconds`
+    - `event.publishing.worker.time.between.runs.milliseconds`
+- New jndi values are no longer global can can be configured per context
 ### Added
 - New column `previous_event_number` on `event_log` table
 - New column `is_published` on `event_log` table
@@ -25,7 +34,19 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 - New index `idx_event_log_not_published` on `event_log(date_created)`
 - New index `idx_event_log_global_sequence` on `event_log(previous_event_number,event_number);`
 ### Removed
-- Removed REBUILD jmx command and associatied classes
+- Removed old jndi values used to configure publishing (and replaced with the above)
+  - `pre.publish.start.wait.milliseconds`
+  - `pre.publish.timer.interval.milliseconds`
+  - `pre.publish.timer.max.runtime.milliseconds`
+  - `event.dequer.start.wait.milliseconds`
+  - `event.dequer.timer.interval.milliseconds`
+  - `event.dequer.timer.max.runtime.milliseconds`
+- Removed JMX commands:
+  - Removed `REBUILD` jmx command and associated classes
+  - Removed `VERIFY_REBUILD` jmx command and associated classes
+  - Removed `ENABLE_PUBLISHING` jmx command and associated classes
+  - Removed `DISABLE_PUBLISHING` jmx command and associated classes
+  - Removed `VALIDATE_EVENTS` jmx command and associated classes
 
 # [17.104.0-M1] - 2025-07-29
 ### Added

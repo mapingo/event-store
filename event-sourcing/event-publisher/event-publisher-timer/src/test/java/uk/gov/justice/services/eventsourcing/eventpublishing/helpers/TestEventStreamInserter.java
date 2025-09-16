@@ -1,4 +1,4 @@
-package uk.gov.justice.services.eventsourcing.publishedevent.prepublish.helpers;
+package uk.gov.justice.services.eventsourcing.eventpublishing.helpers;
 
 import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
 

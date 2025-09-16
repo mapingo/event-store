@@ -1,18 +1,13 @@
 package uk.gov.justice.services.eventsourcing.eventpublishing;
 
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.eventsourcing.publishedevent.publishing.PublisherTimerConfig;
-import uk.gov.justice.services.eventsourcing.util.jee.timer.StopWatchFactory;
-
-import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,28 +18,18 @@ public class EventLinkingWorkerTest {
     @Mock
     private EventNumberLinker eventNumberLinker;
 
-    @Mock
-    private StopWatchFactory stopWatchFactory;
-
-    @Mock
-    private PublisherTimerConfig publisherTimerConfig;
-
     @InjectMocks
     private EventLinkingWorker eventLinkingWorker;
 
     @Test
     public void shouldLinkNewEventsUntilNoMoreUnlinkedEventsAreFound() throws Exception {
 
-        final long maxRuntimeMilliseconds = 5;
-        final StopWatch stopWatch = mock(StopWatch.class);
+        final SufficientTimeRemainingCalculator sufficientTimeRemainingCalculator = mock(SufficientTimeRemainingCalculator.class);
 
-        when(publisherTimerConfig.getTimerMaxRuntimeMilliseconds()).thenReturn(maxRuntimeMilliseconds);
-        when(stopWatchFactory.createStopWatch()).thenReturn(stopWatch);
-
+        when(sufficientTimeRemainingCalculator.hasSufficientProcessingTimeRemaining()).thenReturn(true);
         when(eventNumberLinker.findAndAndLinkNextUnlinkedEvent()).thenReturn(true, true, false);
-        when(stopWatch.getTime()).thenReturn(1L, 2L);
 
-        eventLinkingWorker.findAndLinkUnlinkedEvents();
+        eventLinkingWorker.linkNewEvents(sufficientTimeRemainingCalculator);
 
         verify(eventNumberLinker, times(3)).findAndAndLinkNextUnlinkedEvent();
     }
@@ -52,20 +37,25 @@ public class EventLinkingWorkerTest {
     @Test
     public void shouldContinueLinkingEventsUntilMaxTimeIsExceeded() throws Exception {
 
-        final long maxRuntimeMilliseconds = 5;
-        final StopWatch stopWatch = mock(StopWatch.class);
+        final SufficientTimeRemainingCalculator sufficientTimeRemainingCalculator = mock(SufficientTimeRemainingCalculator.class);
 
-        when(publisherTimerConfig.getTimerMaxRuntimeMilliseconds()).thenReturn(maxRuntimeMilliseconds);
-        when(stopWatchFactory.createStopWatch()).thenReturn(stopWatch);
-
+        when(sufficientTimeRemainingCalculator.hasSufficientProcessingTimeRemaining()).thenReturn(true, true, false);
         when(eventNumberLinker.findAndAndLinkNextUnlinkedEvent()).thenReturn(true);
-        when(stopWatch.getTime()).thenReturn(1L, 2L, 3L, 4L, 5L, 6L);
 
-        eventLinkingWorker.findAndLinkUnlinkedEvents();
+        eventLinkingWorker.linkNewEvents(sufficientTimeRemainingCalculator);
 
-        final InOrder inOrder = inOrder(stopWatch, eventNumberLinker);
+        verify(eventNumberLinker, times(2)).findAndAndLinkNextUnlinkedEvent();
+    }
 
-        inOrder.verify(stopWatch).start();
-        inOrder.verify(eventNumberLinker, times(6)).findAndAndLinkNextUnlinkedEvent();
+    @Test
+    public void shouldNotProcessNextEventIfNoSufficientProcessingTimeRemaining() throws Exception {
+
+        final SufficientTimeRemainingCalculator sufficientTimeRemainingCalculator = mock(SufficientTimeRemainingCalculator.class);
+
+        when(sufficientTimeRemainingCalculator.hasSufficientProcessingTimeRemaining()).thenReturn(false);
+
+        eventLinkingWorker.linkNewEvents(sufficientTimeRemainingCalculator);
+
+        verify(eventNumberLinker, never()).findAndAndLinkNextUnlinkedEvent();
     }
 }
