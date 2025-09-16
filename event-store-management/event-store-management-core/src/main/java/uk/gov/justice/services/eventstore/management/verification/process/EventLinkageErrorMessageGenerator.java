@@ -1,7 +1,7 @@
 package uk.gov.justice.services.eventstore.management.verification.process;
 
 import static java.lang.String.format;
-import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.PUBLISHED_EVENT;
+import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.EVENT_LOG;
 
 public class EventLinkageErrorMessageGenerator {
 
@@ -13,7 +13,7 @@ public class EventLinkageErrorMessageGenerator {
 
 
         final String message;
-        if (linkedEventNumberTable == PUBLISHED_EVENT) {
+        if (linkedEventNumberTable == EVENT_LOG) {
             message = "Events incorrectly linked in %s table: " +
                     "Event with event number %d " +
                     "is linked to previous event number %d " +

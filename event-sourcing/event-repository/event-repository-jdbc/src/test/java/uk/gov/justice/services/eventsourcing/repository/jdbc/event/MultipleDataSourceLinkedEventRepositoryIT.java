@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
-import static uk.gov.justice.services.test.utils.events.PublishedEventBuilder.publishedEventBuilder;
+import static uk.gov.justice.services.test.utils.events.LinkedEventBuilder.publishedEventBuilder;
 
 import uk.gov.justice.services.jdbc.persistence.JdbcResultSetStreamer;
 import uk.gov.justice.services.jdbc.persistence.PreparedStatementWrapperFactory;
@@ -32,7 +32,7 @@ public class MultipleDataSourceLinkedEventRepositoryIT {
 
     private DataSource dataSource;
 
-    private MultipleDataSourcePublishedEventRepository multipleDataSourcePublishedEventRepository;
+    private MultipleDataSourceEventRepository multipleDataSourceEventRepository;
 
     @BeforeEach
     public void initialize() throws Exception {
@@ -41,7 +41,7 @@ public class MultipleDataSourceLinkedEventRepositoryIT {
 
         final JdbcResultSetStreamer jdbcResultSetStreamer = new JdbcResultSetStreamer();
         final PreparedStatementWrapperFactory preparedStatementWrapperFactory = new PreparedStatementWrapperFactory();
-        multipleDataSourcePublishedEventRepository = new MultipleDataSourcePublishedEventRepository(
+        multipleDataSourceEventRepository = new MultipleDataSourceEventRepository(
                 jdbcResultSetStreamer,
                 preparedStatementWrapperFactory,
                 dataSource);
@@ -63,13 +63,13 @@ public class MultipleDataSourceLinkedEventRepositoryIT {
 
         final Connection connection = dataSource.getConnection();
 
-        insertPublishedEvent(event_1, connection);
-        insertPublishedEvent(event_2, connection);
-        insertPublishedEvent(event_3, connection);
-        insertPublishedEvent(event_4, connection);
-        insertPublishedEvent(event_5, connection);
+        insertLinkedEvent(event_1, connection);
+        insertLinkedEvent(event_2, connection);
+        insertLinkedEvent(event_3, connection);
+        insertLinkedEvent(event_4, connection);
+        insertLinkedEvent(event_5, connection);
 
-        final List<LinkedEvent> linkedEvents = multipleDataSourcePublishedEventRepository.findEventsSince(3)
+        final List<LinkedEvent> linkedEvents = multipleDataSourceEventRepository.findEventsSince(3)
                 .collect(toList());
 
         assertThat(linkedEvents.size(), is(2));
@@ -89,13 +89,13 @@ public class MultipleDataSourceLinkedEventRepositoryIT {
 
         final Connection connection = dataSource.getConnection();
 
-        insertPublishedEvent(event_1, connection);
-        insertPublishedEvent(event_2, connection);
-        insertPublishedEvent(event_3, connection);
-        insertPublishedEvent(event_4, connection);
-        insertPublishedEvent(event_5, connection);
+        insertLinkedEvent(event_1, connection);
+        insertLinkedEvent(event_2, connection);
+        insertLinkedEvent(event_3, connection);
+        insertLinkedEvent(event_4, connection);
+        insertLinkedEvent(event_5, connection);
 
-        final List<LinkedEvent> linkedEvents = multipleDataSourcePublishedEventRepository.findEventRange(1, 4)
+        final List<LinkedEvent> linkedEvents = multipleDataSourceEventRepository.findEventRange(1, 4)
                 .collect(toList());
 
         assertThat(linkedEvents.size(), is(3));
@@ -109,9 +109,9 @@ public class MultipleDataSourceLinkedEventRepositoryIT {
     public void fetchByEventIdShouldReturnEventIfExists() throws Exception {
         final Connection connection = dataSource.getConnection();
         final LinkedEvent event = publishedEventBuilder().withPreviousEventNumber(0).withEventNumber(1).build();
-        insertPublishedEvent(event, connection);
+        insertLinkedEvent(event, connection);
 
-        final Optional<LinkedEvent> fetchedEvent = multipleDataSourcePublishedEventRepository.findByEventId(event.getId());
+        final Optional<LinkedEvent> fetchedEvent = multipleDataSourceEventRepository.findByEventId(event.getId());
 
         assertTrue(fetchedEvent.isPresent());
         assertThat(fetchedEvent.get().getId(), is(event.getId()));
@@ -119,13 +119,13 @@ public class MultipleDataSourceLinkedEventRepositoryIT {
 
     @Test
     public void fetchByEventIdShouldReturnEmptyIfEventNotExist() throws Exception {
-        final Optional<LinkedEvent> fetchedEvent = multipleDataSourcePublishedEventRepository.findByEventId(UUID.randomUUID());
+        final Optional<LinkedEvent> fetchedEvent = multipleDataSourceEventRepository.findByEventId(UUID.randomUUID());
 
         assertFalse(fetchedEvent.isPresent());
     }
 
     @Test
-    public void shouldGetLatestPublishedEvent() throws Exception {
+    public void shouldGetLatestEvent() throws Exception {
 
         final LinkedEvent event_1 = publishedEventBuilder().withPreviousEventNumber(0).withEventNumber(1).build();
         final LinkedEvent event_2 = publishedEventBuilder().withPreviousEventNumber(1).withEventNumber(2).build();
@@ -135,13 +135,13 @@ public class MultipleDataSourceLinkedEventRepositoryIT {
 
         final Connection connection = dataSource.getConnection();
         
-        insertPublishedEvent(event_1, connection);
-        insertPublishedEvent(event_2, connection);
-        insertPublishedEvent(event_3, connection);
-        insertPublishedEvent(event_4, connection);
-        insertPublishedEvent(event_5, connection);
+        insertLinkedEvent(event_1, connection);
+        insertLinkedEvent(event_2, connection);
+        insertLinkedEvent(event_3, connection);
+        insertLinkedEvent(event_4, connection);
+        insertLinkedEvent(event_5, connection);
 
-        final Optional<LinkedEvent> latestPublishedEvent = multipleDataSourcePublishedEventRepository.getLatestPublishedEvent();
+        final Optional<LinkedEvent> latestPublishedEvent = multipleDataSourceEventRepository.getLatestPublishedEvent();
 
         if (latestPublishedEvent.isPresent()) {
             assertThat(latestPublishedEvent.get().getId(), is(event_5.getId()));
@@ -160,12 +160,12 @@ public class MultipleDataSourceLinkedEventRepositoryIT {
 
     @Test
     public void shouldReturnEmptyWhenGettingLatestPublishedEventIfNoPublishedEventsExist() throws Exception {
-        assertThat(multipleDataSourcePublishedEventRepository.getLatestPublishedEvent(), is(empty()));
+        assertThat(multipleDataSourceEventRepository.getLatestPublishedEvent(), is(empty()));
     }
 
-    private void insertPublishedEvent(final LinkedEvent linkedEvent, final Connection connection) throws SQLException {
+    private void insertLinkedEvent(final LinkedEvent linkedEvent, final Connection connection) throws SQLException {
 
-        final String sql = "INSERT into published_event (" +
+        final String sql = "INSERT into event_log (" +
                 "id, stream_id, position_in_stream, name, payload, metadata, date_created, event_number, previous_event_number) " +
                 "VALUES " +
                 "(?, ?, ?, ?, ?, ?, ?, ?, ?)";

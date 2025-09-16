@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 /**
  * Source of published events.
  */
-public interface PublishedEventSource {
+public interface LinkedEventSource {
 
     /**
      * returns a (Java) stream of all events since the provided event number. That is all events

@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourcePublishedEventRepository;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourceEventRepository;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingEventRange;
 
@@ -28,10 +28,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class DefaultLinkedEventSourceTest {
 
     @Mock
-    private MultipleDataSourcePublishedEventRepository multipleDataSourcePublishedEventRepository;
+    private MultipleDataSourceEventRepository multipleDataSourceEventRepository;
 
     @InjectMocks
-    private DefaultPublishedEventSource defaultPublishedEventSource;
+    private DefaultLinkedEventSource defaultPublishedEventSource;
 
     @Test
     public void shouldFindEventsByEventNumber() throws Exception {
@@ -40,7 +40,7 @@ public class DefaultLinkedEventSourceTest {
 
         final LinkedEvent linkedEvent = mock(LinkedEvent.class);
 
-        when(multipleDataSourcePublishedEventRepository.findEventsSince(eventNumber)).thenReturn(Stream.of(linkedEvent));
+        when(multipleDataSourceEventRepository.findEventsSince(eventNumber)).thenReturn(Stream.of(linkedEvent));
 
         final List<LinkedEvent> envelopes = defaultPublishedEventSource.findEventsSince(eventNumber).collect(toList());
 
@@ -57,7 +57,7 @@ public class DefaultLinkedEventSourceTest {
         final MissingEventRange missingEventRange = new MissingEventRange(fromEventNumber, toEventNumber);
         final Stream streamOfEvents = mock(Stream.class);
 
-        when(multipleDataSourcePublishedEventRepository.findEventRange(fromEventNumber, toEventNumber)).thenReturn(streamOfEvents);
+        when(multipleDataSourceEventRepository.findEventRange(fromEventNumber, toEventNumber)).thenReturn(streamOfEvents);
 
         final Stream<LinkedEvent> eventRange = defaultPublishedEventSource.findEventRange(missingEventRange);
 
@@ -69,7 +69,7 @@ public class DefaultLinkedEventSourceTest {
 
         final UUID eventId = randomUUID();
         final Optional<LinkedEvent> publishedEvent = of(mock(LinkedEvent.class));
-        when(multipleDataSourcePublishedEventRepository.findByEventId(eventId)).thenReturn(publishedEvent);
+        when(multipleDataSourceEventRepository.findByEventId(eventId)).thenReturn(publishedEvent);
 
         final Optional<LinkedEvent> fetchedEvent = defaultPublishedEventSource.findByEventId(eventId);
 
@@ -82,7 +82,7 @@ public class DefaultLinkedEventSourceTest {
         final Long latestEventNumber = 9827394873L;
         final LinkedEvent latestLinkedEvent = mock(LinkedEvent.class);
         when(latestLinkedEvent.getEventNumber()).thenReturn(of(latestEventNumber));
-        when(multipleDataSourcePublishedEventRepository.getLatestPublishedEvent()).thenReturn(of(latestLinkedEvent));
+        when(multipleDataSourceEventRepository.getLatestPublishedEvent()).thenReturn(of(latestLinkedEvent));
 
         assertThat(defaultPublishedEventSource.getHighestPublishedEventNumber(), is(latestEventNumber));
     }
@@ -92,7 +92,7 @@ public class DefaultLinkedEventSourceTest {
 
         final LinkedEvent latestLinkedEvent = mock(LinkedEvent.class);
         when(latestLinkedEvent.getEventNumber()).thenReturn(empty());
-        when(multipleDataSourcePublishedEventRepository.getLatestPublishedEvent()).thenReturn(of(latestLinkedEvent));
+        when(multipleDataSourceEventRepository.getLatestPublishedEvent()).thenReturn(of(latestLinkedEvent));
 
         assertThat(defaultPublishedEventSource.getHighestPublishedEventNumber(), is(0L));
     }
@@ -100,7 +100,7 @@ public class DefaultLinkedEventSourceTest {
     @Test
     public void shouldReturnZeroIfNoLatestPublishedEventFound() throws Exception {
 
-        when(multipleDataSourcePublishedEventRepository.getLatestPublishedEvent()).thenReturn(empty());
+        when(multipleDataSourceEventRepository.getLatestPublishedEvent()).thenReturn(empty());
 
         assertThat(defaultPublishedEventSource.getHighestPublishedEventNumber(), is(0L));
     }

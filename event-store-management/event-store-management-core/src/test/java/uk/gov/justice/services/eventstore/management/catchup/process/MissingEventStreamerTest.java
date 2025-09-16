@@ -6,9 +6,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.event.sourcing.subscription.manager.PublishedEventSourceProvider;
+import uk.gov.justice.services.event.sourcing.subscription.manager.LinkedEventSourceProvider;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
-import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
+import uk.gov.justice.services.eventsourcing.source.api.service.core.LinkedEventSource;
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingEventRange;
 import uk.gov.justice.services.subscription.ProcessedEventTrackingService;
 
@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class MissingEventStreamerTest {
 
     @Mock
-    private PublishedEventSourceProvider publishedEventSourceProvider;
+    private LinkedEventSourceProvider linkedEventSourceProvider;
 
     @Mock
     private ProcessedEventTrackingService processedEventTrackingService;
@@ -40,7 +40,7 @@ public class MissingEventStreamerTest {
         final String eventSourceName = "event source name";
         final Long highestPublishedEventNumber = 23L;
 
-        final PublishedEventSource publishedEventSource = mock(PublishedEventSource.class);
+        final LinkedEventSource linkedEventSource = mock(LinkedEventSource.class);
 
         final MissingEventRange missingEventRange_1 = mock(MissingEventRange.class);
         final MissingEventRange missingEventRange_2 = mock(MissingEventRange.class);
@@ -57,11 +57,11 @@ public class MissingEventStreamerTest {
         final Stream<LinkedEvent> publishedEventStream_2 = Stream.of(linkedEvent_7, linkedEvent_8);
 
 
-        when(publishedEventSourceProvider.getPublishedEventSource(eventSourceName)).thenReturn(publishedEventSource);
-        when(publishedEventSource.getHighestPublishedEventNumber()).thenReturn(highestPublishedEventNumber);
+        when(linkedEventSourceProvider.getLinkedEventSource(eventSourceName)).thenReturn(linkedEventSource);
+        when(linkedEventSource.getHighestPublishedEventNumber()).thenReturn(highestPublishedEventNumber);
         when(processedEventTrackingService.getAllMissingEvents(eventSourceName, componentName, highestPublishedEventNumber)).thenReturn(missingEventRangeStream);
-        when(publishedEventSource.findEventRange(missingEventRange_1)).thenReturn(publishedEventStream_1);
-        when(publishedEventSource.findEventRange(missingEventRange_2)).thenReturn(publishedEventStream_2);
+        when(linkedEventSource.findEventRange(missingEventRange_1)).thenReturn(publishedEventStream_1);
+        when(linkedEventSource.findEventRange(missingEventRange_2)).thenReturn(publishedEventStream_2);
 
         final List<LinkedEvent> missingEvents = missingEventStreamer.getMissingEvents(eventSourceName, componentName)
                 .collect(toList());

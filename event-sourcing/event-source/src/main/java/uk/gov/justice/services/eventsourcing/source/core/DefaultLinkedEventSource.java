@@ -2,9 +2,9 @@ package uk.gov.justice.services.eventsourcing.source.core;
 
 import static javax.transaction.Transactional.TxType.REQUIRED;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourcePublishedEventRepository;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourceEventRepository;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
-import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
+import uk.gov.justice.services.eventsourcing.source.api.service.core.LinkedEventSource;
 import uk.gov.justice.services.eventsourcing.source.api.streams.MissingEventRange;
 
 import java.util.Optional;
@@ -13,17 +13,17 @@ import java.util.stream.Stream;
 
 import javax.transaction.Transactional;
 
-public class DefaultPublishedEventSource implements PublishedEventSource {
+public class DefaultLinkedEventSource implements LinkedEventSource {
 
-    private final MultipleDataSourcePublishedEventRepository multipleDataSourcePublishedEventRepository;
+    private final MultipleDataSourceEventRepository multipleDataSourceEventRepository;
 
-    public DefaultPublishedEventSource(final MultipleDataSourcePublishedEventRepository multipleDataSourcePublishedEventRepository) {
-        this.multipleDataSourcePublishedEventRepository = multipleDataSourcePublishedEventRepository;
+    public DefaultLinkedEventSource(final MultipleDataSourceEventRepository multipleDataSourceEventRepository) {
+        this.multipleDataSourceEventRepository = multipleDataSourceEventRepository;
     }
 
     @Override
     public Stream<LinkedEvent> findEventsSince(final long eventNumber) {
-        return multipleDataSourcePublishedEventRepository.findEventsSince(eventNumber);
+        return multipleDataSourceEventRepository.findEventsSince(eventNumber);
     }
 
     @Transactional(REQUIRED)
@@ -33,19 +33,19 @@ public class DefaultPublishedEventSource implements PublishedEventSource {
         final Long fromEventNumber = missingEventRange.getMissingEventFrom();
         final Long toEventNumber = missingEventRange.getMissingEventTo();
 
-        return multipleDataSourcePublishedEventRepository.findEventRange(fromEventNumber, toEventNumber);
+        return multipleDataSourceEventRepository.findEventRange(fromEventNumber, toEventNumber);
     }
 
     @Transactional(REQUIRED)
     @Override
     public Optional<LinkedEvent> findByEventId(final UUID eventId) {
-        return multipleDataSourcePublishedEventRepository.findByEventId(eventId);
+        return multipleDataSourceEventRepository.findByEventId(eventId);
     }
 
     @Transactional(REQUIRED)
     @Override
     public Long getHighestPublishedEventNumber() {
-        final Optional<LinkedEvent> latestPublishedEvent = multipleDataSourcePublishedEventRepository
+        final Optional<LinkedEvent> latestPublishedEvent = multipleDataSourceEventRepository
                 .getLatestPublishedEvent();
 
         return latestPublishedEvent.map(publishedEvent -> publishedEvent

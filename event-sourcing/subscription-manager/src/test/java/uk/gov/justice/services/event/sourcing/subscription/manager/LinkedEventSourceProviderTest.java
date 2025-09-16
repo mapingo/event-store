@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.event.sourcing.subscription.manager.cdi.EventSourceNameQualifier;
-import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
+import uk.gov.justice.services.eventsourcing.source.api.service.core.LinkedEventSource;
 
 import javax.enterprise.inject.Instance;
 
@@ -20,24 +20,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class LinkedEventSourceProviderTest {
 
     @Mock
-    private Instance<PublishedEventSource> publishedEventSources;
+    private Instance<LinkedEventSource> publishedEventSources;
 
     @InjectMocks
-    private PublishedEventSourceProvider publishedEventSourceProvider;
+    private LinkedEventSourceProvider linkedEventSourceProvider;
 
     @Test
     public void shouldGetTheCorrectEventSourceByName() throws Exception {
 
         final String eventSourceName = "eventSourceName";
 
-        final PublishedEventSource publishedEventSource = mock(PublishedEventSource.class);
+        final LinkedEventSource linkedEventSource = mock(LinkedEventSource.class);
 
         final EventSourceNameQualifier eventSourceNameQualifier = new EventSourceNameQualifier(eventSourceName);
 
-        final Instance<PublishedEventSource> publishedEventSourceInstance = mock(Instance.class);
+        final Instance<LinkedEventSource> publishedEventSourceInstance = mock(Instance.class);
         when(publishedEventSources.select(eventSourceNameQualifier)).thenReturn(publishedEventSourceInstance);
-        when(publishedEventSourceInstance.get()).thenReturn(publishedEventSource);
+        when(publishedEventSourceInstance.get()).thenReturn(linkedEventSource);
 
-        assertThat(publishedEventSourceProvider.getPublishedEventSource(eventSourceName), is(publishedEventSource));
+        assertThat(linkedEventSourceProvider.getLinkedEventSource(eventSourceName), is(linkedEventSource));
     }
 }

@@ -14,8 +14,8 @@ public class MultipleDataSourcePublishedEventRepositoryFactory {
     @Inject
     private PreparedStatementWrapperFactory preparedStatementWrapperFactory;
 
-    public MultipleDataSourcePublishedEventRepository create(final DataSource dataSource) {
-        return new MultipleDataSourcePublishedEventRepository(
+    public MultipleDataSourceEventRepository create(final DataSource dataSource) {
+        return new MultipleDataSourceEventRepository(
                 jdbcResultSetStreamer,
                 preparedStatementWrapperFactory,
                 dataSource);

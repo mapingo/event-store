@@ -3,10 +3,10 @@ package uk.gov.justice.services.eventstore.management.replay.process;
 import static javax.ejb.TransactionManagementType.CONTAINER;
 import static javax.transaction.Transactional.TxType.NEVER;
 
-import uk.gov.justice.services.event.sourcing.subscription.manager.PublishedEventSourceProvider;
+import uk.gov.justice.services.event.sourcing.subscription.manager.LinkedEventSourceProvider;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventConverter;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
-import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
+import uk.gov.justice.services.eventsourcing.source.api.service.core.LinkedEventSource;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
@@ -24,7 +24,7 @@ import javax.transaction.Transactional;
 public class ReplayEventToEventListenerProcessorBean {
 
     @Inject
-    private PublishedEventSourceProvider publishedEventSourceProvider;
+    private LinkedEventSourceProvider linkedEventSourceProvider;
 
     @Inject
     private TransactionReplayEventProcessor transactionReplayEventProcessor;
@@ -39,15 +39,15 @@ public class ReplayEventToEventListenerProcessorBean {
         final String source = replayEventContext.getEventSourceName();
         final String component = replayEventContext.getComponentName();
 
-        final LinkedEvent linkedEvent = fetchPublishedEvent(source, eventId);
+        final LinkedEvent linkedEvent = fetchLinkedEvent(source, eventId);
         process(source, component, linkedEvent);
     }
 
-    private LinkedEvent fetchPublishedEvent(final String eventSourceName, final UUID eventId) {
-        final PublishedEventSource publishedEventSource = publishedEventSourceProvider.getPublishedEventSource(eventSourceName);
+    private LinkedEvent fetchLinkedEvent(final String eventSourceName, final UUID eventId) {
+        final LinkedEventSource linkedEventSource = linkedEventSourceProvider.getLinkedEventSource(eventSourceName);
 
-        return publishedEventSource.findByEventId(eventId)
-                .orElseThrow(() -> new ReplayEventFailedException("Published event not found for given commandRuntimeId:" + eventId + " under event source name:" + eventSourceName));
+        return linkedEventSource.findByEventId(eventId)
+                .orElseThrow(() -> new ReplayEventFailedException("Event not found for eventId: " + eventId + " from event source name: " + eventSourceName));
     }
 
     private void process(final String source, final String component, final LinkedEvent linkedEvent) {
