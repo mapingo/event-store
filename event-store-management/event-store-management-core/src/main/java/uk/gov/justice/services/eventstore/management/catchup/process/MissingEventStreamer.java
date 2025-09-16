@@ -1,8 +1,8 @@
 package uk.gov.justice.services.eventstore.management.catchup.process;
 
-import uk.gov.justice.services.event.sourcing.subscription.manager.PublishedEventSourceProvider;
+import uk.gov.justice.services.event.sourcing.subscription.manager.LinkedEventSourceProvider;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;
-import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
+import uk.gov.justice.services.eventsourcing.source.api.service.core.LinkedEventSource;
 import uk.gov.justice.services.subscription.ProcessedEventTrackingService;
 
 import java.util.stream.Stream;
@@ -12,17 +12,17 @@ import javax.inject.Inject;
 public class MissingEventStreamer {
 
     @Inject
-    private PublishedEventSourceProvider publishedEventSourceProvider;
+    private LinkedEventSourceProvider linkedEventSourceProvider;
 
     @Inject
     private ProcessedEventTrackingService processedEventTrackingService;
 
     public Stream<LinkedEvent> getMissingEvents(final String eventSourceName, final String componentName) {
 
-        final PublishedEventSource publishedEventSource = publishedEventSourceProvider.getPublishedEventSource(eventSourceName);
-        final Long highestPublishedEventNumber = publishedEventSource.getHighestPublishedEventNumber();
+        final LinkedEventSource linkedEventSource = linkedEventSourceProvider.getLinkedEventSource(eventSourceName);
+        final Long highestPublishedEventNumber = linkedEventSource.getHighestPublishedEventNumber();
 
         return processedEventTrackingService.getAllMissingEvents(eventSourceName, componentName, highestPublishedEventNumber)
-                .flatMap(publishedEventSource::findEventRange);
+                .flatMap(linkedEventSource::findEventRange);
     }
 }

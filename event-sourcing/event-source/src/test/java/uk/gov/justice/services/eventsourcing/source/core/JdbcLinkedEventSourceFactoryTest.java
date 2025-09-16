@@ -5,7 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.getValueOfField;
 
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourcePublishedEventRepository;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourceEventRepository;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourcePublishedEventRepositoryFactory;
 import uk.gov.justice.services.jdbc.persistence.JdbcDataSourceProvider;
 
@@ -35,13 +35,13 @@ public class JdbcLinkedEventSourceFactoryTest {
         final String jndiDatasource = "jndiDatasource";
 
         final DataSource dataSource = jdbcDataSourceProvider.getDataSource(jndiDatasource);
-        final MultipleDataSourcePublishedEventRepository multipleDataSourcePublishedEventRepository = multipleDataSourcePublishedEventRepositoryFactory.create(dataSource);
+        final MultipleDataSourceEventRepository multipleDataSourceEventRepository = multipleDataSourcePublishedEventRepositoryFactory.create(dataSource);
 
         when(jdbcDataSourceProvider.getDataSource(jndiDatasource)).thenReturn(dataSource);
-        when(multipleDataSourcePublishedEventRepositoryFactory.create(dataSource)).thenReturn(multipleDataSourcePublishedEventRepository);
+        when(multipleDataSourcePublishedEventRepositoryFactory.create(dataSource)).thenReturn(multipleDataSourceEventRepository);
 
-        final DefaultPublishedEventSource defaultPublishedEventSource = jdbcPublishedEventSourceFactory.create(jndiDatasource);
+        final DefaultLinkedEventSource defaultPublishedEventSource = jdbcPublishedEventSourceFactory.create(jndiDatasource);
 
-        assertThat(getValueOfField(defaultPublishedEventSource, "multipleDataSourcePublishedEventRepository", MultipleDataSourcePublishedEventRepository.class), is(multipleDataSourcePublishedEventRepository));
+        assertThat(getValueOfField(defaultPublishedEventSource, "multipleDataSourceEventRepository", MultipleDataSourceEventRepository.class), is(multipleDataSourceEventRepository));
     }
 }

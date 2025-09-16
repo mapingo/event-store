@@ -4,7 +4,7 @@ import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.events.EventBuilder.eventBuilder;
-import static uk.gov.justice.services.test.utils.events.PublishedEventBuilder.publishedEventBuilder;
+import static uk.gov.justice.services.test.utils.events.LinkedEventBuilder.publishedEventBuilder;
 
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.LinkedEvent;

@@ -17,6 +17,7 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
   - previous_event_number and event_number moved to event_log table
   - Events now exist solely in event_log table, removing the need for published_event
   - Publish queue now reads directly from event_log table and ignores published_event
+  - `PublishedEvent` renamed to `LinkedEvent` and fetched directly from event_log table
   - published_event table to be deprecated
   - Runs of `EventLinkingTimerBean` now configured using new jndi values:
     - `event.linking.worker.start.wait.milliseconds`

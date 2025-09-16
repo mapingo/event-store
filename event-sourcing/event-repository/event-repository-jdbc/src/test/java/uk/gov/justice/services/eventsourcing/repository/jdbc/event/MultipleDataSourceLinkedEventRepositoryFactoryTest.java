@@ -33,10 +33,10 @@ public class MultipleDataSourceLinkedEventRepositoryFactoryTest {
 
         final DataSource dataSource = mock(DataSource.class);
 
-        final MultipleDataSourcePublishedEventRepository multipleDataSourcePublishedEventRepository = multipleDataSourcePublishedEventRepositoryFactory.create(dataSource);
+        final MultipleDataSourceEventRepository multipleDataSourceEventRepository = multipleDataSourcePublishedEventRepositoryFactory.create(dataSource);
 
-        assertThat(getValueOfField(multipleDataSourcePublishedEventRepository, "jdbcResultSetStreamer", JdbcResultSetStreamer.class), is(jdbcResultSetStreamer));
-        assertThat(getValueOfField(multipleDataSourcePublishedEventRepository, "preparedStatementWrapperFactory", PreparedStatementWrapperFactory.class), is(preparedStatementWrapperFactory));
-        assertThat(getValueOfField(multipleDataSourcePublishedEventRepository, "dataSource", DataSource.class), is(dataSource));
+        assertThat(getValueOfField(multipleDataSourceEventRepository, "jdbcResultSetStreamer", JdbcResultSetStreamer.class), is(jdbcResultSetStreamer));
+        assertThat(getValueOfField(multipleDataSourceEventRepository, "preparedStatementWrapperFactory", PreparedStatementWrapperFactory.class), is(preparedStatementWrapperFactory));
+        assertThat(getValueOfField(multipleDataSourceEventRepository, "dataSource", DataSource.class), is(dataSource));
     }
 }

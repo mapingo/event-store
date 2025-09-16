@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.PUBLISHED_EVENT;
+import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.EVENT_LOG;
 
 import uk.gov.justice.services.eventsourcing.source.core.EventStoreDataSourceProvider;
 import uk.gov.justice.services.eventstore.management.verification.process.EventLinkageChecker;
@@ -46,7 +46,7 @@ public class LinkedEventLinkVerifierTest {
 
         when(eventStoreDataSourceProvider.getDefaultDataSource()).thenReturn(eventStoreDataSource);
 
-        when(eventLinkageChecker.verifyEventNumbersAreLinkedCorrectly(PUBLISHED_EVENT, eventStoreDataSource)).thenReturn(results);
+        when(eventLinkageChecker.verifyEventNumbersAreLinkedCorrectly(EVENT_LOG, eventStoreDataSource)).thenReturn(results);
 
         assertThat(publishedEventLinkVerifier.verify(), is(results));
     }

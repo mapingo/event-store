@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.PROCESSED_EVENT;
-import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.PUBLISHED_EVENT;
+import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.EVENT_LOG;
 import static uk.gov.justice.services.eventstore.management.verification.process.VerificationResult.VerificationResultType.ERROR;
 import static uk.gov.justice.services.eventstore.management.verification.process.VerificationResult.VerificationResultType.SUCCESS;
 
@@ -36,7 +36,7 @@ public class EventLinkageCheckerTest {
     @Test
     public void shouldReturnSuccessIfAllEventsAreCorrectlyLinked() throws Exception {
 
-        final String sql = "SELECT event_number, previous_event_number FROM published_event ORDER BY event_number";
+        final String sql = "SELECT event_number, previous_event_number FROM event_log ORDER BY event_number";
 
         final DataSource dataSource = mock(DataSource.class);
         final Connection connection = mock(Connection.class);
@@ -52,12 +52,12 @@ public class EventLinkageCheckerTest {
         when(resultSet.getInt("event_number")).thenReturn(1, 2, 3);
 
         final List<VerificationResult> publishedEventsResults = eventLinkageChecker.verifyEventNumbersAreLinkedCorrectly(
-                PUBLISHED_EVENT,
+                EVENT_LOG,
                 dataSource);
 
         assertThat(publishedEventsResults.size(), is(1));
         assertThat(publishedEventsResults.get(0).getVerificationResultType(), is(SUCCESS));
-        assertThat(publishedEventsResults.get(0).getMessage(), is("All 3 events in the published_event table are correctly linked"));
+        assertThat(publishedEventsResults.get(0).getMessage(), is("All 3 events in the event_log table are correctly linked"));
     }
 
     @Test
@@ -65,7 +65,7 @@ public class EventLinkageCheckerTest {
 
         final String errorMessage = "error message";
 
-        final String sql = "SELECT event_number, previous_event_number FROM published_event ORDER BY event_number";
+        final String sql = "SELECT event_number, previous_event_number FROM event_log ORDER BY event_number";
 
         final DataSource dataSource = mock(DataSource.class);
         final Connection connection = mock(Connection.class);
@@ -80,10 +80,10 @@ public class EventLinkageCheckerTest {
         when(resultSet.getInt("previous_event_number")).thenReturn(0, 1, 3);
         when(resultSet.getInt("event_number")).thenReturn(1, 2, 4);
 
-        when(eventLinkageErrorMessageGenerator.generateErrorMessage(3, 4, 2, PUBLISHED_EVENT)).thenReturn(errorMessage);
+        when(eventLinkageErrorMessageGenerator.generateErrorMessage(3, 4, 2, EVENT_LOG)).thenReturn(errorMessage);
 
         final List<VerificationResult> publishedEventsResults = eventLinkageChecker.verifyEventNumbersAreLinkedCorrectly(
-                PUBLISHED_EVENT,
+                EVENT_LOG,
                 dataSource);
 
         assertThat(publishedEventsResults.size(), is(1));
@@ -131,7 +131,7 @@ public class EventLinkageCheckerTest {
 
         final SQLException sqlException = new SQLException("Ooops");
 
-        final String sql = "SELECT event_number, previous_event_number FROM published_event ORDER BY event_number";
+        final String sql = "SELECT event_number, previous_event_number FROM event_log ORDER BY event_number";
 
         final DataSource dataSource = mock(DataSource.class);
         final Connection connection = mock(Connection.class);
@@ -145,12 +145,12 @@ public class EventLinkageCheckerTest {
 
         try {
             eventLinkageChecker.verifyEventNumbersAreLinkedCorrectly(
-                    PUBLISHED_EVENT,
+                    EVENT_LOG,
                     dataSource);
             fail();
         } catch (final CatchupVerificationException expected) {
             assertThat(expected.getCause(), is(sqlException));
-            assertThat(expected.getMessage(), is("Failed to get event numbers from published_event table"));
+            assertThat(expected.getMessage(), is("Failed to get event numbers from event_log table"));
         }
     }
 }

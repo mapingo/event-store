@@ -3,7 +3,7 @@ package uk.gov.justice.services.eventstore.management.verification.process;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.PROCESSED_EVENT;
-import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.PUBLISHED_EVENT;
+import static uk.gov.justice.services.eventstore.management.verification.process.LinkedEventNumberTable.EVENT_LOG;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,9 +27,9 @@ public class EventLinkageErrorMessageGeneratorTest {
                 previousEventNumber,
                 currentEventNumber,
                 lastEvenNumber,
-                PUBLISHED_EVENT);
+                EVENT_LOG);
 
-        assertThat(errorMessage, is("Events incorrectly linked in published_event table: " +
+        assertThat(errorMessage, is("Events incorrectly linked in event_log table: " +
                 "Event with event number 24 is linked to previous event number 23 " +
                 "whereas it should be 13"));
     }

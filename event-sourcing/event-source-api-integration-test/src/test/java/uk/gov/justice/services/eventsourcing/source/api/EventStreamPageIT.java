@@ -45,7 +45,7 @@ import uk.gov.justice.services.eventsourcing.repository.jdbc.PublishQueueReposit
 import uk.gov.justice.services.eventsourcing.repository.jdbc.PublishQueuesDataAccess;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventConverter;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventJdbcRepository;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourcePublishedEventRepository;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourceEventRepository;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.eventstream.EventStreamJdbcRepository;
 import uk.gov.justice.services.eventsourcing.source.api.resource.EventSourceApiApplication;
 import uk.gov.justice.services.eventsourcing.source.api.resource.EventStreamPageResource;
@@ -223,7 +223,7 @@ public class EventStreamPageIT {
 
             DefaultEventSourceDefinitionFactory.class,
             SubscriptionSorter.class,
-            MultipleDataSourcePublishedEventRepository.class,
+            MultipleDataSourceEventRepository.class,
             EventJdbcRepository.class,
             EventStreamJdbcRepository.class,
             JdbcBasedEventRepository.class,

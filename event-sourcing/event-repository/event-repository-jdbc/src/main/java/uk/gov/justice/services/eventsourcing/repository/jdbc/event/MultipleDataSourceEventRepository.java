@@ -23,14 +23,14 @@ import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
-public class MultipleDataSourcePublishedEventRepository {
+public class MultipleDataSourceEventRepository {
 
-    private static final String SQL_FIND_ALL_SINCE = "SELECT * FROM published_event WHERE event_number > ? ORDER BY event_number ASC";
-    private static final String SQL_FIND_RANGE = "SELECT * FROM published_event WHERE event_number >= ? AND event_number < ? ORDER BY event_number ASC";
-    private static final String SQL_FIND_BY_ID = "SELECT * FROM published_event WHERE id = ?";
-    private static final String SQL_FIND_LATEST_PUBLISHED_EVENT = """
+    private static final String SQL_FIND_ALL_SINCE = "SELECT * FROM event_log WHERE event_number > ? ORDER BY event_number ASC";
+    private static final String SQL_FIND_RANGE = "SELECT * FROM event_log WHERE event_number >= ? AND event_number < ? ORDER BY event_number ASC";
+    private static final String SQL_FIND_BY_ID = "SELECT * FROM event_log WHERE id = ?";
+    private static final String SQL_FIND_LATEST_LINKED_EVENT = """
         SELECT id, stream_id, position_in_stream, name, payload, metadata, date_created, event_number, previous_event_number 
-        FROM published_event 
+        FROM event_log 
         ORDER BY event_number DESC 
         LIMIT 1""";
 
@@ -49,7 +49,7 @@ public class MultipleDataSourcePublishedEventRepository {
     private final PreparedStatementWrapperFactory preparedStatementWrapperFactory;
     private final DataSource dataSource;
 
-    public MultipleDataSourcePublishedEventRepository(
+    public MultipleDataSourceEventRepository(
             final JdbcResultSetStreamer jdbcResultSetStreamer,
             final PreparedStatementWrapperFactory preparedStatementWrapperFactory,
             final DataSource dataSource) {
@@ -71,7 +71,7 @@ public class MultipleDataSourcePublishedEventRepository {
 
             psWrapper.setLong(1, eventNumber);
 
-            return jdbcResultSetStreamer.streamOf(psWrapper, asPublishedEvent());
+            return jdbcResultSetStreamer.streamOf(psWrapper, asEvent());
         } catch (final SQLException e) {
             throw new JdbcRepositoryException(format("Failed to find events since event_number %d", eventNumber), e);
         }
@@ -92,7 +92,7 @@ public class MultipleDataSourcePublishedEventRepository {
             psWrapper.setLong(1, fromEventNumber);
             psWrapper.setLong(2, toEventNumber);
 
-            return jdbcResultSetStreamer.streamOf(psWrapper, asPublishedEvent());
+            return jdbcResultSetStreamer.streamOf(psWrapper, asEvent());
         } catch (final SQLException e) {
             throw new JdbcRepositoryException(format("Failed to find events from event_number %d to %d", fromEventNumber, toEventNumber), e);
         }
@@ -114,7 +114,7 @@ public class MultipleDataSourcePublishedEventRepository {
             final ResultSet resultSet = psWrapper.executeQuery();
 
             return resultSet.next()
-                    ? Optional.of(asPublishedEvent().apply(resultSet))
+                    ? Optional.of(asEvent().apply(resultSet))
                     : Optional.empty();
         } catch (final SQLException e) {
             throw new JdbcRepositoryException(format("Failed to find event with id %s", eventId), e);
@@ -125,7 +125,7 @@ public class MultipleDataSourcePublishedEventRepository {
     public Optional<LinkedEvent> getLatestPublishedEvent() {
         try {
             try (final Connection connection = dataSource.getConnection();
-                 final PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_LATEST_PUBLISHED_EVENT)) {
+                 final PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_LATEST_LINKED_EVENT)) {
 
                 try (final ResultSet resultSet = preparedStatement.executeQuery()) {
 
@@ -161,7 +161,7 @@ public class MultipleDataSourcePublishedEventRepository {
         }
     }
 
-    private Function<ResultSet, LinkedEvent> asPublishedEvent() {
+    private Function<ResultSet, LinkedEvent> asEvent() {
         return resultSet -> {
             try {
                 return new LinkedEvent((UUID) resultSet.getObject(ID),

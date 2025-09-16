@@ -47,7 +47,7 @@ import uk.gov.justice.services.eventsourcing.repository.jdbc.PublishQueuesDataAc
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.Event;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventConverter;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.EventJdbcRepository;
-import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourcePublishedEventRepository;
+import uk.gov.justice.services.eventsourcing.repository.jdbc.event.MultipleDataSourceEventRepository;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.eventstream.EventStreamJdbcRepository;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.exception.InvalidPositionException;
 import uk.gov.justice.services.eventsourcing.source.api.resource.EventPageResource;
@@ -230,7 +230,7 @@ public class EventsPageIT {
             DefaultEventSourceDefinitionFactory.class,
             SubscriptionSorter.class,
             OpenEjbEventStoreDataSourceProvider.class,
-            MultipleDataSourcePublishedEventRepository.class,
+            MultipleDataSourceEventRepository.class,
             OpenEjbEventStoreDataSourceProvider.class,
             EventJdbcRepository.class,
             EventStreamJdbcRepository.class,

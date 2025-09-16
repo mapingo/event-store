@@ -2,7 +2,7 @@ package uk.gov.justice.services.eventstore.management.verification.process;
 
 public enum LinkedEventNumberTable {
 
-    PUBLISHED_EVENT("published_event"),
+    EVENT_LOG("event_log"),
     PROCESSED_EVENT("processed_event");
 
     private final String tableName;

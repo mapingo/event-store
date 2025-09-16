@@ -3,7 +3,7 @@ package uk.gov.justice.services.eventsourcing.source.core;
 import static java.lang.String.format;
 
 import uk.gov.justice.services.cdi.QualifierAnnotationExtractor;
-import uk.gov.justice.services.eventsourcing.source.api.service.core.PublishedEventSource;
+import uk.gov.justice.services.eventsourcing.source.api.service.core.LinkedEventSource;
 import uk.gov.justice.services.eventsourcing.source.core.annotation.EventSourceName;
 import uk.gov.justice.subscription.domain.eventsource.EventSourceDefinition;
 import uk.gov.justice.subscription.domain.eventsource.Location;
@@ -37,10 +37,10 @@ public class PublishedEventSourceProducer {
      * Backwards compatible support for Unnamed PublishedEventSource injection points. Uses the
      * injected container JNDI name to lookup the EventSource
      *
-     * @return {@link PublishedEventSource}
+     * @return {@link LinkedEventSource}
      */
     @Produces
-    public PublishedEventSource publishedEventSource() {
+    public LinkedEventSource publishedEventSource() {
         return createEventSourceFrom(eventSourceDefinitionRegistry.getDefaultEventSourceDefinition());
     }
 
@@ -49,12 +49,12 @@ public class PublishedEventSourceProducer {
      * {@code
      *
      * @param injectionPoint the injection point for the EventSource
-     * @return {@link PublishedEventSource}
+     * @return {@link LinkedEventSource }
      * @EventSourceName("name")}
      */
     @Produces
     @EventSourceName
-    public PublishedEventSource publishedEventSource(final InjectionPoint injectionPoint) {
+    public LinkedEventSource publishedEventSource(final InjectionPoint injectionPoint) {
 
         final String eventSourceName = qualifierAnnotationExtractor.getFrom(injectionPoint, EventSourceName.class).value();
         final Optional<EventSourceDefinition> eventSourceDefinition = eventSourceDefinitionRegistry.getEventSourceDefinitionFor(eventSourceName);
@@ -64,7 +64,7 @@ public class PublishedEventSourceProducer {
                 .orElseThrow(() -> new CreationException(format("Failed to find EventSource named '%s' in event-sources.yaml", eventSourceName)));
     }
 
-    private PublishedEventSource createEventSourceFrom(final EventSourceDefinition eventSourceDefinition) {
+    private LinkedEventSource createEventSourceFrom(final EventSourceDefinition eventSourceDefinition) {
         final Location location = eventSourceDefinition.getLocation();
         final Optional<String> dataSourceOptional = location.getDataSource();
 

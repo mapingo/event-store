@@ -13,7 +13,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-public class PublishedEventBuilder {
+public class LinkedEventBuilder {
 
     private UUID id = randomUUID();
     private UUID streamId = randomUUID();
@@ -26,58 +26,58 @@ public class PublishedEventBuilder {
     private Long eventNumber = 23L;
     private Long previousEventNumber = 22L;
 
-    protected PublishedEventBuilder() {}
+    protected LinkedEventBuilder() {}
 
-    public static PublishedEventBuilder publishedEventBuilder() {
-        return new PublishedEventBuilder();
+    public static LinkedEventBuilder publishedEventBuilder() {
+        return new LinkedEventBuilder();
     }
 
-    public PublishedEventBuilder withId(final UUID id) {
+    public LinkedEventBuilder withId(final UUID id) {
         this.id = id;
         return this;
     }
 
-    public PublishedEventBuilder withSource(final String source) {
+    public LinkedEventBuilder withSource(final String source) {
         this.source = source;
         return this;
     }
 
-    public PublishedEventBuilder withStreamId(final UUID streamId) {
+    public LinkedEventBuilder withStreamId(final UUID streamId) {
         this.streamId = streamId;
         return this;
     }
 
-    public PublishedEventBuilder withPositionInStream(final Long positionInStream) {
+    public LinkedEventBuilder withPositionInStream(final Long positionInStream) {
         this.positionInStream = positionInStream;
         return this;
     }
 
-    public PublishedEventBuilder withName(final String name) {
+    public LinkedEventBuilder withName(final String name) {
         this.name = name;
         return this;
     }
 
-    public PublishedEventBuilder withMetadataJSON(final String metadataJSON) {
+    public LinkedEventBuilder withMetadataJSON(final String metadataJSON) {
         this.metadataJSON = metadataJSON;
         return this;
     }
 
-    public PublishedEventBuilder withPayloadJSON(final String payloadJSON) {
+    public LinkedEventBuilder withPayloadJSON(final String payloadJSON) {
         this.payloadJSON = payloadJSON;
         return this;
     }
 
-    public PublishedEventBuilder withTimestamp(final ZonedDateTime timestamp) {
+    public LinkedEventBuilder withTimestamp(final ZonedDateTime timestamp) {
         this.timestamp = timestamp;
         return this;
     }
 
-    public PublishedEventBuilder withEventNumber(final long eventNumber) {
+    public LinkedEventBuilder withEventNumber(final long eventNumber) {
         this.eventNumber = eventNumber;
         return this;
     }
 
-    public PublishedEventBuilder withPreviousEventNumber(final long previousEventNumber) {
+    public LinkedEventBuilder withPreviousEventNumber(final long previousEventNumber) {
         this.previousEventNumber = previousEventNumber;
         return this;
     }

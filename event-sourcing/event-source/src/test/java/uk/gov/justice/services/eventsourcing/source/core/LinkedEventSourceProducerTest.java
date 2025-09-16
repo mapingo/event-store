@@ -53,7 +53,7 @@ public class LinkedEventSourceProducerTest {
                 .build();
         final InjectionPoint injectionPoint = mock(InjectionPoint.class);
         final EventSourceName eventSourceNameAnnotation = mock(EventSourceName.class);
-        final DefaultPublishedEventSource defaultPublishedEventSource = mock(DefaultPublishedEventSource.class);
+        final DefaultLinkedEventSource defaultPublishedEventSource = mock(DefaultLinkedEventSource.class);
 
         when(eventSourceDefinitionRegistry.getDefaultEventSourceDefinition()).thenReturn(eventSourceDefinition);
         when(jdbcPublishedEventSourceFactory.create(eventSourceDefinition.getLocation().getDataSource().get())).thenReturn(defaultPublishedEventSource);
@@ -70,7 +70,7 @@ public class LinkedEventSourceProducerTest {
                 .withLocation(new Location("", empty(), Optional.of("dataSource")))
                 .build();
 
-        final DefaultPublishedEventSource defaultPublishedEventSource = mock(DefaultPublishedEventSource.class);
+        final DefaultLinkedEventSource defaultPublishedEventSource = mock(DefaultLinkedEventSource.class);
 
         when(eventSourceDefinitionRegistry.getDefaultEventSourceDefinition()).thenReturn(eventSourceDefinition);
         when(jdbcPublishedEventSourceFactory.create(eventSourceDefinition.getLocation().getDataSource().get())).thenReturn(defaultPublishedEventSource);
@@ -88,7 +88,7 @@ public class LinkedEventSourceProducerTest {
         final EventSourceName eventSourceNameAnnotation = mock(EventSourceName.class);
         final EventSourceDefinition eventSourceDefinition = mock(EventSourceDefinition.class);
         final Location location = mock(Location.class);
-        final DefaultPublishedEventSource defaultPublishedEventSource = mock(DefaultPublishedEventSource.class);
+        final DefaultLinkedEventSource defaultPublishedEventSource = mock(DefaultLinkedEventSource.class);
 
         when(qualifierAnnotationExtractor.getFrom(injectionPoint, EventSourceName.class)).thenReturn(eventSourceNameAnnotation);
         when(eventSourceNameAnnotation.value()).thenReturn(eventSourceName);
