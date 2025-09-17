@@ -4,6 +4,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 [Semantic Versioning](http://semver.org/).
 
 ### [Unreleased]
+
+# [17.104.0-M2] - 2025-09-17
 ### Added
 - New column `previous_event_number` on `event_log` table
 - New column `is_published` on `event_log` table
